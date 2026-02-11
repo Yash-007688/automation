@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | Security Alert</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/lib/lucide.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #0a0b0f;
+        }
+
+        .alert-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 3rem;
+            background: rgba(16, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 32px;
+            text-align: center;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% {
+                border-color: rgba(239, 68, 68, 0.2);
+            }
+
+            50% {
+                border-color: rgba(239, 68, 68, 0.5);
+            }
+
+            100% {
+                border-color: rgba(239, 68, 68, 0.2);
+            }
+        }
+
+        .alert-icon {
+            width: 72px;
+            height: 72px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: #ef4444;
+        }
+
+        .device-info {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+            border: 1px solid var(--glass-border);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-authorize {
+            width: 100%;
+            background: #ef4444;
+            border-color: #ef4444;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="alert-card">
+        <div class="alert-icon">
+            <i data-lucide="alert-triangle" style="width: 36px; height: 36px;"></i>
+        </div>
+        <h1 style="color: #ef4444;">New Login Detected</h1>
+        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+            Instagram has flagged a login attempt from a new automated node. An approval request has been sent to your
+            registered email.
+        </p>
+
+        <div class="device-info">
+            <div class="info-row">
+                <span class="info-label">Node Location</span>
+                <span class="info-value">London, United Kingdom</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Device Type</span>
+                <span class="info-value">Linux-Handshake-Server v4.2</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">IP Address</span>
+                <span class="info-value">192.168.{{ range(1, 255)|random }}.{{ range(1, 255)|random }}</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            If this was you, please authorize the connection in your email or proceed to 2FA verification.
+        </p>
+
+        <a href="{{ url_for('auth_2fa') }}" class="btn btn-primary btn-authorize">This Was Me →</a>
+        <a href="{{ url_for('login_ui') }}" class="btn btn-secondary">Report Suspicious Activity</a>
+
+        <div
+            style="margin-top: 2rem; font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i data-lucide="mail" style="width: 14px;"></i>
+            Checking for Email Approval Sync...
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

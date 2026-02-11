@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<header class="top-bar">
+    <h1>Performance Analytics</h1>
+    <div class="actions">
+        <button class="btn btn-secondary">Report Generator</button>
+    </div>
+</header>
+
+<div class="dashboard-grid">
+    <!-- Main Chart Card -->
+    <div class="card full-width">
+        <div class="card-header">
+            <h3>Conversion Performance (Daily)</h3>
+            <div style="display: flex; gap: 1rem; font-size: 0.8rem; font-weight: 600;">
+                <span style="color: var(--accent-purple);"><span
+                        style="display: inline-block; width: 8px; height: 8px; background: var(--accent-purple); border-radius: 50%; margin-right: 5px;"></span>Captured
+                    Leads</span>
+            </div>
+        </div>
+        <div class="mock-chart" style="height: 350px; margin-top: 2rem;">
+            <div class="chart-bars" style="align-items: flex-end; height: 100%; gap: 2rem;">
+                {% for data in stats.chart_data %}
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <div style="font-size: 0.75rem; font-weight: 800; color: white;">{{ data.count }}</div>
+                    <div class="bar {% if loop.last %}active{% endif %}"
+                        style="height: {{ (data.count / (stats.total_leads or 1)) * 250 + 10 }}px; width: 100%; max-width: 60px;">
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);">{{ data.day }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Insights -->
+    <div class="card">
+        <h3>Win Rate</h3>
+        <p style="font-size: 2.5rem; font-weight: 800; margin: 1.5rem 0;">{{ range(65, 92)|random }}%</p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">Conversion from Comment → DM Handshake</p>
+    </div>
+
+    <div class="card">
+        <h3>Avg Response Time</h3>
+        <p style="font-size: 2.5rem; font-weight: 800; margin: 1.5rem 0;">2.4s</p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">Real-time infrastructure latency</p>
+    </div>
+
+    <div class="card">
+        <h3>Niche Relevance</h3>
+        <p style="font-size: 2.5rem; font-weight: 800; margin: 1.5rem 0; color: {{ user.niche_color }}">{{ user.niche }}
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">Algorithm targeting optimization</p>
+    </div>
+</div>
+{% endblock %}

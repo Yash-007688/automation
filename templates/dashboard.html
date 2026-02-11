@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+
+{% block content %}
+<header class="top-bar">
+    <h1>Executive Overview</h1>
+    <div class="actions">
+        <button class="btn btn-secondary" onclick="location.reload()">Refresh Metrics</button>
+        <button class="btn btn-primary" onclick="alert('Deployment sequence initiated...')">Deploy New Agent</button>
+    </div>
+</header>
+
+<section class="dashboard-grid">
+    <!-- Stat Cards -->
+    <div class="card stat-card glow-purple">
+        <p class="stat-label">Total Handled Leads</p>
+        <h2 class="stat-value">{{ stats.total_leads }}</h2>
+        <span class="stat-trend positive">+14% this week</span>
+    </div>
+    <div class="card stat-card glow-cyan">
+        <p class="stat-label">System Engagements</p>
+        <h2 class="stat-value">{{ stats.engagements }}</h2>
+        <span class="stat-trend positive">+8% this week</span>
+    </div>
+    <div class="card stat-card glow-gold">
+        <p class="stat-label">Projected Revenue ROI</p>
+        <h2 class="stat-value">{{ stats.revenue_roi }}</h2>
+        <span class="stat-trend positive">+22% this week</span>
+    </div>
+
+    <!-- Mini Activity (Simplified version of Automations log) -->
+    <div class="card activity-card full-width">
+        <div class="card-header">
+            <h3>Recent Automation Activity</h3>
+            <a href="/automations"
+                style="color: var(--accent-purple); font-size: 0.85rem; font-weight: 700; text-decoration: none;">View
+                Logs →</a>
+        </div>
+        <div id="mini-log"
+            style="display: flex; flex-direction: column; gap: 0.75rem; font-family: 'Fira Code', monospace; font-size: 0.8rem;">
+            <!-- Populate via script shared with automations or static for snapshot -->
+            <span style="color: var(--text-secondary);">[LOG] Fetching live metrics...</span>
+            <span style="color: var(--text-secondary);">[LOG] Engine listening on {{ user.username }}...</span>
+        </div>
+    </div>
+</section>
+
+<script>
+    function fetchMiniLog() {
+        fetch('/api/activity')
+            .then(r => r.json())
+            .then(events => {
+                const log = document.getElementById('mini-log');
+                if (events.length > 0) {
+                    const p = document.createElement('span');
+                    p.style.color = '#10b981';
+                    p.textContent = events[0];
+                    log.prepend(p);
+                    if (log.children.length > 5) log.lastChild.remove();
+                }
+            });
+    }
+    setInterval(fetchMiniLog, 5000);
+</script>
+{% endblock %}

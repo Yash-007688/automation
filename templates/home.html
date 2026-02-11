@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | Scale Your Instagram Revenue with AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/lib/lucide.min.js"></script>
+    <style>
+        .hero {
+            padding: 10rem 3.5rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to bottom, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+        }
+
+        .stats-banner {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-bottom: 5rem;
+        }
+
+        .banner-item h3 {
+            font-size: 2.5rem;
+            color: var(--accent-purple);
+        }
+
+        .banner-item p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* REFINED PRICING SECTION - PREMIUM OVERHAUL */
+        .pricing-section {
+            padding: 12rem 3.5rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+        }
+
+        /* PERSISTENT FOCUS ANIMATION */
+        .pricing-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 6rem auto 0;
+            transition: all 0.5s ease;
+        }
+
+        .pricing-card {
+            background: #0a0e14;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4.5rem 2.5rem;
+            border-radius: 40px;
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .pricing-card.visible {
+            /* Already visible by default now */
+        }
+
+        /* The Magic: Focus effect */
+        .pricing-grid:hover .pricing-card:not(:hover) {
+            transform: scale(0.9);
+            filter: blur(2px) grayscale(0.5);
+            opacity: 0.4;
+        }
+
+        .pricing-card:hover {
+            transform: scale(1.1) !important;
+            z-index: 100;
+            border-color: rgba(139, 92, 246, 0.6);
+            background: #0d121a;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(139, 92, 246, 0.1);
+            opacity: 1 !important;
+            filter: none !important;
+        }
+
+        /* Ensure featured card is still distinct */
+        .pricing-card.featured {
+            border: 1px solid #8b5cf6;
+            background: #0d121a;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.05);
+        }
+
+        .pricing-card.featured:not(:hover) {
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured {
+            border: 1px solid #8b5cf6;
+            background: #0d121a;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.05);
+            animation: featuredPulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes featuredPulse {
+            from {
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.05);
+            }
+
+            to {
+                box-shadow: 0 0 80px rgba(139, 92, 246, 0.15);
+            }
+        }
+
+        .pricing-card h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .price {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 3rem;
+            letter-spacing: -2px;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+        }
+
+        .price span {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-left: 0.5rem;
+        }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 4rem 0;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .features li {
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .features li svg,
+        .features li i {
+            color: #06b6d4;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Buttons matching screenshot exactly */
+        .btn-pricing {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-foundation,
+        .btn-enterprise {
+            background: #1a1f26;
+            /* Darker grey as seen in screenshot */
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-foundation:hover,
+        .btn-enterprise:hover {
+            background: #252b35;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-growth {
+            background: #8b5cf6;
+            color: white;
+            padding: 1.1rem 3.5rem;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-growth:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.6);
+            background: #7c3aed;
+        }
+
+        @media (max-width: 1100px) {
+            .pricing-grid {
+                flex-direction: column;
+                gap: 3rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+                animation: cardReveal 1s forwards;
+            }
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3.5rem;
+            background: rgba(5, 7, 10, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--glass-border);
+        }
+    </style>
+</head>
+
+<body class="home">
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <span>ZenFlow</span>
+        </div>
+        <div class="nav-links">
+            <a href="/login" class="btn btn-primary">Connect Instagram</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Turn Instagram<br>into an Automated<br>Revenue Machine.</h1>
+        <p>We build premium conversational infrastructure that qualifies your leads and books your calendar 24/7. Stop
+            losing sales in the DMs.</p>
+        <div class="stats-banner">
+            <div class="banner-item">
+                <h3>100%</h3>
+                <p>Official Meta API</p>
+            </div>
+            <div class="banner-item">
+                <h3>$14M+</h3>
+                <p>Client Revenue Est.</p>
+            </div>
+            <div class="banner-item">
+                <h3>0%</h3>
+                <p>Ban Risk</p>
+            </div>
+        </div>
+        <a href="/login" class="btn btn-primary btn-lg"
+            style="font-size: 1.2rem; padding: 1rem 3rem; text-decoration: none; display: inline-block;">Connect &
+            Detect My Niche →</a>
+    </header>
+
+    <section class="pricing-section">
+        <h2 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">Premium Scaling Plans</h2>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem;">Transparent pricing built for
+            results.</p>
+
+        <div class="pricing-grid">
+            <!-- Foundation -->
+            <div class="pricing-card">
+                <h3>Foundation</h3>
+                <div class="price">$499<span>/mo</span></div>
+                <ul class="features">
+                    <li><i data-lucide="check-circle-2"></i> 1 Core Sales Funnel</li>
+                    <li><i data-lucide="check-circle-2"></i> Comment Automation</li>
+                    <li><i data-lucide="check-circle-2"></i> Standard Analytics</li>
+                    <li><i data-lucide="check-circle-2"></i> 24h Support</li>
+                </ul>
+                <button class="btn-pricing btn-foundation">Get Started</button>
+            </div>
+
+            <!-- Growth Engine -->
+            <div class="pricing-card featured">
+                <div
+                    style="position: absolute; top: 1.5rem; left: 50%; transform: translateX(-50%); background: #8b5cf6; color: white; padding: 0.5rem 1.5rem; border-radius: 30px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; white-space: nowrap; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                    MOST POPULAR</div>
+                <h3>Growth Engine</h3>
+                <div class="price">$1,499<span>/mo</span></div>
+                <ul class="features">
+                    <li><i data-lucide="check-circle-2"></i> Unlimited Funnels</li>
+                    <li><i data-lucide="check-circle-2"></i> AI Lead Qualification</li>
+                    <li><i data-lucide="check-circle-2"></i> CRM Integration</li>
+                    <li><i data-lucide="check-circle-2"></i> Premium Portal Access</li>
+                    <li><i data-lucide="check-circle-2"></i> Weekly Optimization</li>
+                </ul>
+                <button class="btn-pricing btn-growth">Join Now</button>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">Custom</div>
+                <ul class="features">
+                    <li><i data-lucide="check-circle-2"></i> Multi-Channel Support</li>
+                    <li><i data-lucide="check-circle-2"></i> Custom AI Agent Training</li>
+                    <li><i data-lucide="check-circle-2"></i> Direct Multi-Admin</li>
+                    <li><i data-lucide="check-circle-2"></i> Performance Bonus Option</li>
+                </ul>
+                <button class="btn-pricing btn-enterprise">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <footer
+        style="padding: 5rem 3.5rem; text-align: center; border-top: 1px solid var(--glass-border); color: var(--text-secondary); background: rgba(0,0,0,0.3);">
+        <div style="margin-bottom: 2rem;">
+            <div class="logo" style="justify-content: center; margin-bottom: 1rem;">
+                <div class="logo-icon"></div>
+                <span>ZenFlow</span>
+            </div>
+            <p>Built for the next generation of digital agencies.</p>
+        </div>
+        <p>© 2026 ZenFlow Automation Agency. All rights reserved.</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Scroll Reveal Animation
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Stop observing once visible
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.pricing-card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.15}s`;
+            observer.observe(card);
+        });
+    </script>
+</body>
+
+</html>

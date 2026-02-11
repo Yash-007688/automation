@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | Join the Infrastructure</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/lib/lucide.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            background-color: #05070a;
+            margin: 0;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 480px;
+            padding: 4.5rem 3.5rem;
+            background: #0a0e14;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: cardReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .login-card h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: white;
+            letter-spacing: -1.5px;
+        }
+
+        .login-card p {
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1.1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-handshake {
+            width: 100%;
+            padding: 1.25rem;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            margin-top: 1rem;
+        }
+
+        .btn-handshake:hover {
+            transform: scale(1.02);
+            background: #7c3aed;
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.5);
+        }
+
+        .bottom-links {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .bottom-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 2px;
+            transition: all 0.3s;
+        }
+
+        .bottom-links a:hover {
+            color: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-card">
+        <div class="logo" style="justify-content: center; margin-bottom: 1.5rem;">
+            <div class="logo-icon"></div>
+            <span>ZenFlow</span>
+        </div>
+        <h1>Secure Connection</h1>
+        <p>Connect your Instagram account directly to our sales engine.</p>
+
+        <form action="/auth/direct" method="POST">
+            <div class="form-group">
+                <label>Instagram Username</label>
+                <input type="text" name="username" placeholder="@yourhandle" required>
+            </div>
+            <div class="form-group">
+                <label>Instagram Password</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <div
+                style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.15); padding: 1rem; border-radius: 12px; margin-bottom: 2rem; text-align: left;">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; margin: 0;">
+                    <strong style="color: #8b5cf6;">Security Notice:</strong> End-to-end encrypted handshake. Your
+                    credentials allow ZenFlow to establish the automation bridge.
+                </p>
+            </div>
+
+            <button type="submit" class="btn-handshake">Establish Handshake →</button>
+        </form>
+
+        <div class="bottom-links">
+            Don't have an account? <a href="/">View Plans</a>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

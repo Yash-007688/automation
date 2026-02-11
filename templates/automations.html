@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Automations{% endblock %}
+
+{% block content %}
+<header class="top-bar">
+    <h1>Automation Infrastructure</h1>
+    <div class="status-pill {{ 'active' if funnel.active else 'inactive' }}"
+        style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+        {{ 'Engine Online' if funnel.active else 'Engine Paused' }}
+    </div>
+</header>
+
+<div class="dashboard-grid">
+    <!-- Configuration -->
+    <div class="card funnel-card">
+        <div class="card-header">
+            <h3>Engine Configuration</h3>
+        </div>
+        <form action="/dashboard/update" method="POST" class="settings-form"
+            style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="input-group">
+                <label
+                    style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Trigger
+                    Wake-Word</label>
+                <input type="text" name="wakeword" value="{{ funnel.wakeword }}"
+                    style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: white;">
+            </div>
+            <div class="input-group">
+                <label
+                    style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Target
+                    Link (DM Payload)</label>
+                <input type="text" name="link" value="{{ funnel.link }}"
+                    style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: white;">
+            </div>
+            <div class="input-group">
+                <label
+                    style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">Auto-Response
+                    Script</label>
+                <textarea name="script" rows="3"
+                    style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 10px; color: white;">{{ funnel.script }}</textarea>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <label class="switch">
+                    <input type="checkbox" name="active" {% if funnel.active %}checked{% endif %}>
+                    <span class="slider round"></span>
+                </label>
+                <span style="font-size: 0.9rem; color: var(--text-secondary);">Enable Global Automation</span>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Update Agent
+                Layout</button>
+        </form>
+    </div>
+
+    <!-- Live Log -->
+    <div class="card activity-card">
+        <div class="card-header">
+            <h3>Live Activity Log</h3>
+        </div>
+        <div id="activity-log"
+            style="font-family: 'Fira Code', monospace; font-size: 0.75rem; height: 350px; overflow-y: auto; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 15px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; gap: 0.5rem;">
+            <span style="color: var(--text-secondary);">[SYSTEM] Automation Engine Warm-up...</span>
+        </div>
+    </div>
+
+    <!-- Reel Picker -->
+    <div class="card full-width">
+        <div class="card-header">
+            <h3>Target Content selection</h3>
+            <form action="/dashboard/fetch-media" method="POST">
+                <button type="submit" class="btn btn-secondary" style="font-size: 0.8rem;">Refresh Media ↓</button>
+            </form>
+        </div>
+        <div class="media-grid"
+            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1rem;">
+            {% for media in active_media %}
+            <div class="media-item"
+                style="position: relative; border-radius: 16px; overflow: hidden; border: 3px solid {% if media.is_active %}var(--accent-purple){% else %}transparent{% endif %}; transition: all 0.3s; background: #000;">
+                <img src="{{ media.thumbnail_url }}" alt="Media"
+                    style="width: 100%; height: 200px; object-fit: cover; opacity: {% if media.is_active %}1{% else %}0.5{% endif %};">
+                <div
+                    style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.7rem; color: rgba(255,255,255,0.7);">#{{ loop.index }}</span>
+                    <button onclick="toggleMedia({{ media.id }}, this)"
+                        style="background: {% if media.is_active %}#10b981{% else %}rgba(255,255,255,0.15){% endif %}; border: none; border-radius: 6px; color: white; padding: 4px 10px; font-size: 0.7rem; font-weight: 700; cursor: pointer;">
+                        {% if media.is_active %}Active{% else %}Activate{% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not active_media %}
+            <div style="grid-column: span 4; text-align: center; padding: 4rem; opacity: 0.4;">
+                <p>No media layout fetched. Click "Refresh Media" to target content.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleMedia(mediaId, btn) {
+        fetch(`/dashboard/media/toggle/${mediaId}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    btn.style.background = data.state ? '#10b981' : 'rgba(255,255,255,0.15)';
+                    btn.textContent = data.state ? 'Active' : 'Activate';
+                    const item = btn.closest('.media-item');
+                    item.style.borderColor = data.state ? 'var(--accent-purple)' : 'transparent';
+                    item.querySelector('img').style.opacity = data.state ? '1' : '0.5';
+                }
+            });
+    }
+
+    function updateLog() {
+        fetch('/api/activity')
+            .then(r => r.json())
+            .then(events => {
+                const log = document.getElementById('activity-log');
+                events.forEach(ev => {
+                    const p = document.createElement('span');
+                    p.style.color = '#10b981';
+                    p.textContent = ev;
+                    log.prepend(p);
+                });
+                if (log.children.length > 30) log.lastElementChild.remove();
+            });
+    }
+    setInterval(updateLog, 5000);
+</script>
+{% endblock %}

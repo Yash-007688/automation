@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | {% block title %}Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Horizontal Nav Override */
+        .app-container {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            display: none;
+        }
+
+        /* Hide old sidebar */
+        .main-content {
+            margin-left: 0;
+            padding: 2rem 3.5rem;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 3.5rem;
+            background: rgba(10, 14, 22, 0.85);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.4rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 0.6rem 2.2rem;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-avatar {
+            width: 38px;
+            height: 38px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="top-nav">
+        <a href="/dashboard" class="nav-brand">
+            <div class="logo-icon"></div>
+            <span>ZenFlow</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">Overview</a>
+            <a href="/automations"
+                class="nav-link {% if request.path == '/automations' %}active{% endif %}">Automations</a>
+            <a href="/leads" class="nav-link {% if request.path == '/leads' %}active{% endif %}">Leads</a>
+            <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+        </div>
+
+        <div class="nav-user">
+            <div style="text-align: right;">
+                <p style="font-size: 0.8rem; font-weight: 800; margin: 0; color: white;">@{{ user.username }}</p>
+                <p style="font-size: 0.65rem; color: {{ user.niche_color }}; margin: 0; font-weight: 600;">{{ user.niche
+                    }}</p>
+            </div>
+            <div class="nav-avatar">{{ user.avatar }}</div>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+
+</html>

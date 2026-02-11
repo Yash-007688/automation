@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Leads CRM{% endblock %}
+
+{% block content %}
+<header class="top-bar">
+    <h1>Lead Management CRM</h1>
+    <div style="display: flex; gap: 1rem;">
+        <input type="text" id="lead-page-search" placeholder="Search handles or status..."
+            style="min-width: 300px; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 30px; color: white;">
+        <a href="/dashboard/export" class="btn btn-secondary">Export CSV</a>
+    </div>
+</header>
+
+<div class="card leads-card full-width">
+    <div class="lead-list" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+        <div class="lead-header"
+            style="display: flex; padding: 1rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; border-bottom: 1px solid var(--glass-border);">
+            <div style="flex: 2;">HANDLE</div>
+            <div style="flex: 1;">RELEVANCE</div>
+            <div style="flex: 1;">CAPTURED</div>
+            <div style="flex: 1; text-align: right;">STATUS</div>
+        </div>
+
+        <div id="leads-container">
+            {% for lead in leads %}
+            <div class="lead-row" data-search="{{ lead.handle | lower }} {{ lead.status | lower }}"
+                style="display: flex; align-items: center; padding: 1.25rem 1rem; background: rgba(255,255,255,0.02); border-radius: 12px; margin-bottom: 0.5rem; border: 1px solid transparent; transition: all 0.2s;">
+                <div style="flex: 2; display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 36px; height: 36px; background: {{ user.niche_color }}22; color: {{ user.niche_color }}; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem;">
+                        {{ lead.handle[0]|upper }}
+                    </div>
+                    <span style="font-weight: 700;">@{{ lead.handle }}</span>
+                </div>
+                <div style="flex: 1; color: var(--text-secondary); font-size: 0.9rem;">High ({{ user.niche }})</div>
+                <div style="flex: 1; color: var(--text-secondary); font-size: 0.9rem;">{{ lead.timestamp.strftime('%d
+                    %b, %H:%M') }}</div>
+                <div style="flex: 1; text-align: right;">
+                    <select onchange="updateLeadStatus({{ lead.id }}, this.value)"
+                        style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-weight: 700; font-size: 0.75rem; cursor: pointer;">
+                        <option value="Qualified" {% if lead.status=='Qualified' %}selected{% endif %}>Qualified
+                        </option>
+                        <option value="Nurturing" {% if lead.status=='Nurturing' %}selected{% endif %}>Nurturing
+                        </option>
+                        <option value="Booked" {% if lead.status=='Booked' %}selected{% endif %}>Booked</option>
+                    </select>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not leads %}
+            <div style="text-align: center; padding: 5rem; opacity: 0.3;">No leads captured yet. Engine is listening...
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('lead-page-search').addEventListener('input', function (e) {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.lead-row').forEach(row => {
+            const text = row.getAttribute('data-search');
+            row.style.display = text.includes(term) ? 'flex' : 'none';
+        });
+    });
+
+    function updateLeadStatus(leadId, newStatus) {
+        fetch(`/lead/update-status/${leadId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                // Flash success
+                event.target.parentElement.parentElement.style.borderColor = "#10b981";
+                setTimeout(() => { event.target.parentElement.parentElement.style.borderColor = "transparent"; }, 500);
+            }
+        });
+    }
+</script>
+{% endblock %}

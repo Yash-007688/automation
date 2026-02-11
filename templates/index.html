@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | Premium Client Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/lib/lucide.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>ZenFlow</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-lucide="layout-dashboard">Dashboard</a>
+                <a href="#" class="nav-item" data-lucide="users">Leads</a>
+                <a href="#" class="nav-item" data-lucide="zap">Automations</a>
+                <a href="#" class="nav-item" data-lucide="bar-chart-3">Analytics</a>
+            </nav>
+            <div class="user-profile">
+                <div class="avatar">{{ user.avatar }}</div>
+                <div class="user-info">
+                    <p class="user-name">@{{ user.username }}</p>
+                    <div
+                        style="display: flex; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0;">
+                        <span><strong>{{ user.followers }}</strong> Followers</span>
+                        <span>•</span>
+                        <span><strong>{{ user.following }}</strong> Following</span>
+                    </div>
+                    <p class="user-plan" style="color: {{ user.niche_color }}; font-size: 0.8rem; font-weight: 600;">
+                        Niche: {{ user.niche }}</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>Executive Overview</h1>
+                <div class="actions">
+                    <button class="btn btn-secondary" data-lucide="bell"></button>
+                    <button class="btn btn-primary">+ New Campaign</button>
+                </div>
+            </header>
+
+            <section class="dashboard-grid">
+                <!-- Stat Cards -->
+                <div class="card stat-card glow-purple">
+                    <p class="stat-label">Total Leads</p>
+                    <h2 class="stat-value">{{ stats.total_leads }}</h2>
+                    <span class="stat-trend positive">+{{ range(5, 15)|random }}% this week</span>
+                </div>
+                <div class="card stat-card glow-cyan">
+                    <p class="stat-label">Engagements</p>
+                    <h2 class="stat-value">{{ stats.engagements }}</h2>
+                    <span class="stat-trend positive">+{{ range(5, 10)|random }}% this week</span>
+                </div>
+                <div class="card stat-card glow-gold">
+                    <p class="stat-label">Revenue ROI (Est)</p>
+                    <h2 class="stat-value">{{ stats.revenue_roi }}</h2>
+                    <span class="stat-trend positive">+{{ range(15, 30)|random }}% this week</span>
+                </div>
+
+                <!-- Automation Engine -->
+                <div class="card full-width automation-card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <h3 style="margin: 0;">Automation Infrastructure</h3>
+                            <div class="status-pill {{ 'active' if funnel.active else 'inactive' }}">
+                                <span class="dot"></span>
+                                {{ 'Engine Active' if funnel.active else 'Engine Paused' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <form action="/dashboard/update" method="POST" style="margin-top: 2rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">Comment
+                                    Wakeword (Trigger)</label>
+                                <input type="text" name="wakeword" value="{{ funnel.wakeword }}" placeholder="e.g. GROW"
+                                    style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: white;"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label
+                                    style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">Destination
+                                    Link</label>
+                                <input type="url" name="link" value="{{ funnel.link }}" placeholder="https://..."
+                                    style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: white;"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">Automated
+                                DM Script</label>
+                            <textarea name="script" rows="3"
+                                style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; color: white; resize: none;"
+                                required>{{ funnel.script }}</textarea>
+                            <small
+                                style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; display: block;">Pro
+                                Tip: Your link will be automatically appended to this script.</small>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                            <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
+                                <div class="switch">
+                                    <input type="checkbox" name="active" {{ 'checked' if funnel.active }}>
+                                    <span class="slider round"></span>
+                                </div>
+                                <span style="font-size: 0.9rem; color: var(--text-secondary);">Enable Comment-to-DM
+                                    Engine</span>
+                            </label>
+                            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem;">Deploy
+                                Infrastructure →</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Target Content Selection -->
+                <div class="card content-card"
+                    style="margin-top: 2rem; border: 1px solid var(--glass-border); background: var(--card-bg); border-radius: 20px; padding: 2rem;">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0; font-family: 'Outfit', sans-serif;">Target Content Selection</h3>
+                        <form action="/dashboard/fetch-media" method="POST" style="margin: 0;">
+                            <button type="submit" class="view-all"
+                                style="background: none; border: none; cursor: pointer; color: var(--accent-purple); font-weight: 800; font-family: 'Outfit';">Fetch
+                                Layout ↓</button>
+                        </form>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">Select exactly
+                        which Reels or Posts the automation should target.</p>
+
+                    <div class="media-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        {% for media in active_media %}
+                        <div class="media-item"
+                            style="position: relative; border-radius: 16px; overflow: hidden; border: 3px solid {% if media.is_active %}var(--accent-purple){% else %}transparent{% endif %}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #000;">
+                            <img src="{{ media.thumbnail_url }}" alt="Media"
+                                style="width: 100%; height: 160px; object-fit: cover; display: block; opacity: {% if media.is_active %}1{% else %}0.6{% endif %};">
+                            <div class="media-overlay"
+                                style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.7rem; color: rgba(255,255,255,0.8); font-weight: 600;">#{{
+                                    loop.index }}</span>
+                                <button onclick="toggleMedia({{ media.id }}, this)"
+                                    style="background: {% if media.is_active %}#10b981{% else %}rgba(255,255,255,0.15){% endif %}; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 4px 10px; font-size: 0.7rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); transition: all 0.2s;">
+                                    {% if media.is_active %}Active{% else %}Activate{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if not active_media %}
+                        <div
+                            style="grid-column: span 3; text-align: center; padding: 3rem 1rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 2px dashed rgba(255,255,255,0.1);">
+                            <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;">📸</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">No media
+                                layout fetched.<br>Click <strong style="color: var(--accent-purple);">Fetch
+                                    Layout</strong> to target content.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <script>
+                    function toggleMedia(mediaId, btn) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+
+                        fetch(`/dashboard/media/toggle/${mediaId}`, { method: 'POST' })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    btn.style.background = data.state ? '#10b981' : 'rgba(255,255,255,0.15)';
+                                    btn.textContent = data.state ? 'Active' : 'Activate';
+                                    const item = btn.closest('.media-item');
+                                    item.style.borderColor = data.state ? 'var(--accent-purple)' : 'transparent';
+                                    item.querySelector('img').style.opacity = data.state ? '1' : '0.6';
+                                }
+                            })
+                            .finally(() => {
+                                btn.disabled = false;
+                                btn.style.opacity = '1';
+                            });
+                    }
+                </script>
+
+                <!-- Main Chart Area -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>Conversion Performance</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item"><i class="dot purple"></i> New Leads</span>
+                        </div>
+                    </div>
+                    <div class="mock-chart">
+                        <div class="chart-bars">
+                            {% for data in stats.chart_data %}
+                            <div class="bar-container"
+                                style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; flex: 1;">
+                                <div class="bar {% if loop.last %}active{% endif %}"
+                                    style="height: {{ (data.count / (stats.total_leads or 1)) * 200 + 10 }}px; width: 100%; max-width: 40px;">
+                                </div>
+                                <span style="font-size: 0.7rem; color: var(--text-secondary);">{{ data.day }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Activity Feed -->
+                <div class="card activity-card">
+                    <div class="card-header">
+                        <h3>Live Automation Log</h3>
+                        <div class="pulse-icon"
+                            style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: activityPulse 1.5s infinite;">
+                        </div>
+                    </div>
+                    <div id="activity-log"
+                        style="font-family: 'Fira Code', monospace; font-size: 0.75rem; height: 180px; overflow-y: auto; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span style="color: var(--text-secondary);">[SYSTEM] Automation Engine Warm-up...</span>
+                        <span style="color: var(--text-secondary);">[SYSTEM] Listening for keyword: {{ funnel.wakeword
+                            }}</span>
+                    </div>
+                </div>
+
+                <style>
+                    @keyframes activityPulse {
+                        0% {
+                            transform: scale(1);
+                            opacity: 1;
+                        }
+
+                        50% {
+                            transform: scale(1.5);
+                            opacity: 0.5;
+                        }
+
+                        100% {
+                            transform: scale(1);
+                            opacity: 1;
+                        }
+                    }
+
+                    .chart-bars {
+                        display: flex;
+                        align-items: flex-end;
+                        height: 200px;
+                        gap: 1rem;
+                        width: 100%;
+                    }
+
+                    .bar {
+                        background: rgba(59, 130, 246, 0.4);
+                        border-radius: 8px 8px 4px 4px;
+                        transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        position: relative;
+                    }
+
+                    .bar.active {
+                        background: var(--accent-purple);
+                        box-shadow: 0 0 15px var(--accent-purple);
+                    }
+                </style>
+
+                <script>
+                    function updateActivity() {
+                        fetch('/api/activity')
+                            .then(r => r.json())
+                            .then(events => {
+                                const log = document.getElementById('activity-log');
+                                events.forEach(ev => {
+                                    const p = document.createElement('span');
+                                    p.style.color = '#10b981';
+                                    p.style.opacity = '0';
+                                    p.style.transform = 'translateX(-10px)';
+                                    p.style.transition = 'all 0.4s';
+                                    p.textContent = ev;
+                                    log.prepend(p);
+                                    setTimeout(() => { p.style.opacity = '1'; p.style.transform = 'translateX(0)'; }, 50);
+                                });
+                                if (log.children.length > 20) log.lastChild.remove();
+                            });
+                    }
+                    setInterval(updateActivity, 5000);
+                    setTimeout(updateActivity, 1000);
+                </script>
+
+                <!-- Recent Leads -->
+                <div class="card leads-card">
+                    <div class="card-header">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <h3>Recent High-Intent Leads</h3>
+                            <input type="text" id="lead-search" placeholder="Search handles..."
+                                style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.8rem; color: white;">
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <a href="/dashboard/export" class="view-all"
+                                style="color: var(--accent-purple); font-weight: 600;">Download CSV</a>
+                        </div>
+                    </div>
+                    <div class="lead-list" id="lead-items">
+                        {% for lead in leads %}
+                        <div class="lead-item" data-handle="{{ lead.handle | lower }}">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div class="lead-avatar"
+                                    style="background: {{ user.niche_color }}33; color: {{ user.niche_color }}">
+                                    {{ lead.handle[0]|upper }}
+                                </div>
+                                <div>
+                                    <p class="lead-handle">@{{ lead.handle }}</p>
+                                    <p class="lead-time">{{ lead.timestamp.strftime('%d %b, %H:%M') }}</p>
+                                </div>
+                            </div>
+                            <select onchange="updateLeadStatus({{ lead.id }}, this.value)" class="status-select"
+                                style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: none; border-radius: 4px; font-size: 0.7rem; padding: 2px 5px; cursor: pointer;">
+                                <option value="Qualified" {% if lead.status=='Qualified' %}selected{% endif %}>Qualified
+                                </option>
+                                <option value="Nurturing" {% if lead.status=='Nurturing' %}selected{% endif %}>Nurturing
+                                </option>
+                                <option value="Booked" {% if lead.status=='Booked' %}selected{% endif %}>Booked</option>
+                            </select>
+                        </div>
+                        {% endfor %}
+                        {% if not leads %}
+                        <p style="padding: 2rem; color: var(--text-secondary); text-align: center;">No leads captured
+                            yet.
+                            Deploy your infrastructure to start!</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Active Triggers -->
+                <div class="card triggers-card">
+                    <div class="card-header">
+                        <h3>Suggested Niche Keywords</h3>
+                    </div>
+                    <div class="trigger-list">
+                        {% for keyword in user.keywords %}
+                        <div class="trigger-item">
+                            <span class="trigger-tag"
+                                style="background: {{ user.niche_color }}33; color: {{ user.niche_color }}">#{{ keyword
+                                }}</span>
+                            <p class="trigger-perf">Suggested for {{ user.niche }}</p>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
