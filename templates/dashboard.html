@@ -3,10 +3,37 @@
 
 {% block content %}
 <header class="top-bar">
-    <h1>Executive Overview</h1>
+    <div>
+        <h1>Executive Overview</h1>
+        <div
+            style="margin-top: 0.25rem; font-size: 0.9rem; color: var(--text-secondary); display:flex; gap:0.75rem; align-items:center;">
+            <span>
+                Plan:
+                <span
+                    style="display: inline-block; padding: 0.15rem 0.75rem; border-radius: 999px; background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.4); color: #e5e7eb; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em;">
+                    {{ user.plan or 'Free' }}
+                </span>
+            </span>
+            {% if 'Yearly' in (user.plan or '') %}
+            <span
+                style="display:inline-flex; align-items:center; gap:0.25rem; padding:0.1rem 0.6rem; border-radius:999px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.4); font-size:0.75rem; color:#bbf7d0;">
+                <span
+                    style="width:6px; height:6px; border-radius:999px; background:#22c55e; box-shadow:0 0 10px rgba(34,197,94,0.8);"></span>
+                Yearly billing
+            </span>
+            {% else %}
+            <span
+                style="display:inline-flex; align-items:center; gap:0.25rem; padding:0.1rem 0.6rem; border-radius:999px; background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.4); font-size:0.75rem; color:#e5e7eb;">
+                Monthly billing
+            </span>
+            {% endif %}
+        </div>
+    </div>
     <div class="actions">
         <button class="btn btn-secondary" onclick="location.reload()">Refresh Metrics</button>
-        <button class="btn btn-primary" onclick="alert('Deployment sequence initiated...')">Deploy New Agent</button>
+        <a href="{{ url_for('home') }}" class="btn btn-primary" style="text-decoration:none;">
+            View / Upgrade Plan
+        </a>
     </div>
 </header>
 
@@ -26,6 +53,80 @@
         <p class="stat-label">Projected Revenue ROI</p>
         <h2 class="stat-value">{{ stats.revenue_roi }}</h2>
         <span class="stat-trend positive">+22% this week</span>
+    </div>
+
+    <!-- Token Cards -->
+    <div class="card stat-card glow-cyan" style="border-left-color: #06b6d4;">
+        <p class="stat-label">Free Tokens (Monthly)</p>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h2 class="stat-value" id="free-tokens-count">{{ user.free_tokens }}</h2>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">/ 4000</span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div
+            style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 1rem 0; overflow: hidden;">
+            {% set used_percentage = ((4000 - user.free_tokens) / 4000 * 100)|round|int %}
+            <div id="free-tokens-bar"
+                style="width: {{ used_percentage }}%; height: 100%; background: linear-gradient(90deg, #06b6d4, #3b82f6); border-radius: 10px; transition: width 0.5s ease;">
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary);">
+            <span id="used-percentage-text">{{ used_percentage }}% used</span>
+            <span>Resets in 30 days</span>
+        </div>
+    </div>
+    <div class="card stat-card glow-purple" style="border-left-color: #8b5cf6;">
+        <p class="stat-label">Paid Tokens (Reserve)</p>
+        <h2 class="stat-value" id="paid-tokens-count">{{ user.paid_tokens }}</h2>
+        <span class="stat-trend positive">Never expires</span>
+    </div>
+
+    <!-- Instagram Connection Card -->
+    <div class="card full-width">
+        <div class="card-header">
+            <h3>Instagram Integration</h3>
+            {% if user.instagram_connected %}
+            <div class="status-pill active"
+                style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+                Connected
+            </div>
+            {% else %}
+            <div class="status-pill inactive"
+                style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+                Not Connected
+            </div>
+            {% endif %}
+        </div>
+        <div style="padding: 1.5rem; text-align: center;">
+            {% if user.instagram_connected %}
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">Your Instagram account is connected and ready!
+            </p>
+            <button class="btn btn-secondary" onclick="fetchInstagramProfile()" style="margin-right: 1rem;">Refresh
+                Profile</button>
+            <button class="btn btn-secondary" onclick="fetchInstagramMedia()" style="margin-right: 1rem;">Fetch
+                Media</button>
+            {% else %}
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">Connect your Instagram Business account to
+                automate interactions and grow your audience.</p>
+
+            <div style="text-align: center;">
+                <a href="{{ url_for('auth_instagram') }}" class="btn btn-primary"
+                    style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); border: none; padding: 0.75rem 1.5rem; font-size: 1rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                    </svg>
+                    Continue with Instagram
+                </a>
+                <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-secondary);">
+                    You will be redirected to Facebook to authorize the connection.
+                </p>
+            </div>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Mini Activity (Simplified version of Automations log) -->
@@ -60,6 +161,74 @@
                 }
             });
     }
+
+    function fetchInstagramProfile() {
+        fetch('/api/instagram/profile')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Instagram profile:', data.profile);
+                    alert(`Connected to @${data.profile.username}`);
+                } else {
+                    console.error('Error fetching profile:', data.error);
+                    if (data.error === 'token_expired') {
+                        alert('Instagram token expired. Please reconnect your account.');
+                    } else {
+                        alert('Error fetching Instagram profile: ' + data.error);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error while fetching Instagram profile');
+            });
+    }
+
+    function fetchInstagramMedia() {
+        fetch('/api/instagram/media')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Instagram media:', data.media);
+                    alert(`Fetched ${data.media.length} media items`);
+                } else {
+                    console.error('Error fetching media:', data.error);
+                    if (data.error === 'token_expired') {
+                        alert('Instagram token expired. Please reconnect your account.');
+                    } else {
+                        alert('Error fetching Instagram media: ' + data.error);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Network error while fetching Instagram media');
+            });
+    }
+
+    function updateTokens() {
+        fetch('/api/user/tokens')
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+                const freeCount = document.getElementById('free-tokens-count');
+                const paidCount = document.getElementById('paid-tokens-count');
+                const percentageText = document.getElementById('used-percentage-text');
+                const progressBar = document.getElementById('free-tokens-bar');
+                if (freeCount) freeCount.textContent = data.free_tokens;
+                if (paidCount) paidCount.textContent = data.paid_tokens;
+                if (progressBar || percentageText) {
+                    const maxFree = data.max_free || 4000;
+                    const used = maxFree - data.free_tokens;
+                    const percentage = Math.round((used / maxFree) * 100);
+                    if (progressBar) progressBar.style.width = percentage + '%';
+                    if (percentageText) percentageText.textContent = percentage + '% used';
+                }
+            })
+            .catch(err => console.error('Error fetching tokens:', err));
+    }
+
     setInterval(fetchMiniLog, 5000);
+    setInterval(updateTokens, 10000);
 </script>
 {% endblock %}

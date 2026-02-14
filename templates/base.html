@@ -114,19 +114,52 @@
 <body>
     <nav class="top-nav">
         <a href="/dashboard" class="nav-brand">
-            <div class="logo-icon"></div>
-            <span>ZenFlow</span>
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZenFlow"
+                style="height: 32px; width: auto;">
         </a>
 
         <div class="nav-links">
+            <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a>
             <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">Overview</a>
             <a href="/automations"
                 class="nav-link {% if request.path == '/automations' %}active{% endif %}">Automations</a>
             <a href="/leads" class="nav-link {% if request.path == '/leads' %}active{% endif %}">Leads</a>
             <a href="/analytics" class="nav-link {% if request.path == '/analytics' %}active{% endif %}">Analytics</a>
+            {% if user.is_admin %}
+            <a href="/admin" class="nav-link {% if request.path.startswith('/admin') %}active{% endif %}"
+                style="color: #fca5a5;">Admin</a>
+            {% endif %}
         </div>
 
-        <div class="nav-user">
+        <div class="nav-user" style="position: relative;">
+            <!-- Notification Bell -->
+            <button id="notif-bell" aria-label="Notifications"
+                style="width:38px; height:38px; border-radius:999px; border:1px solid var(--glass-border); background:rgba(15,23,42,0.9); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; margin-right: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 16v-4.5a6 6 0 0 0-12 0V16l-1.5 2H19.5L18 16Z" stroke="#e5e7eb" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M10 20a2 2 0 0 0 4 0" stroke="#e5e7eb" stroke-width="1.7" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <!-- Notification dropdown -->
+            <div id="notif-panel"
+                style="position:absolute; right:0; top:120%; width:280px; background:rgba(15,23,42,0.97); border-radius:18px; border:1px solid var(--glass-border); box-shadow:0 18px 45px rgba(15,23,42,0.9); padding:1rem 1.25rem; transform:translateY(-10px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:120;">
+                <p
+                    style="font-size:0.8rem; font-weight:700; color:#e5e7eb; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.5rem;">
+                    What’s new
+                </p>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                    Founding launch: use <strong style="color:#f97316;">FOUNDING50</strong> for 50% off your first year
+                    on any paid plan. Limited to the first 100 users.
+                </p>
+                <p style="font-size:0.8rem; color:var(--text-secondary);">
+                    Limited seats on <strong>Foundation</strong> and <strong>Growth Engine</strong> tiers. Lock in your
+                    founder pricing before we close beta.
+                </p>
+            </div>
+
             <div style="text-align: right;">
                 <p style="font-size: 0.8rem; font-weight: 800; margin: 0; color: white;">@{{ user.username }}</p>
                 <p style="font-size: 0.65rem; color: {{ user.niche_color }}; margin: 0; font-weight: 600;">{{ user.niche
@@ -141,6 +174,40 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+
+    <script>
+        // Notification bell behaviour
+        const bell = document.getElementById('notif-bell');
+        const panel = document.getElementById('notif-panel');
+        function togglePanel(forceOpen) {
+            if (!panel) return;
+            const isOpen = panel.style.opacity === '1';
+            const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+            if (shouldOpen) {
+                panel.style.opacity = '1';
+                panel.style.transform = 'translateY(0)';
+                panel.style.pointerEvents = 'auto';
+            } else {
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateY(-10px)';
+                panel.style.pointerEvents = 'none';
+            }
+        }
+
+        if (bell && panel) {
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePanel();
+            });
+
+            // Close panel when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!panel.contains(e.target) && e.target !== bell) {
+                    togglePanel(false);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFlow | Beta Access</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3.5rem;
+            background: rgba(5, 7, 10, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .pricing-section {
+            padding: 6rem 3.5rem;
+            text-align: center;
+            background: radial-gradient(circle at top, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+        }
+
+        /* Match home pricing cards */
+        .pricing-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 4rem auto 0;
+            transition: all 0.5s ease;
+        }
+
+        .pricing-card {
+            background: #0a0e14;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3.5rem 2.5rem;
+            border-radius: 40px;
+            width: 100%;
+            max-width: 540px;
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .pricing-card.featured {
+            border: 1px solid #8b5cf6;
+            background: #0d121a;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+
+        .beta-badge {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.12);
+            color: #6ee7b7;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .beta-form {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .beta-form-row {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .beta-form input {
+            width: 100%;
+            padding: 0.65rem 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .beta-form input::placeholder {
+            color: rgba(148, 163, 184, 0.9);
+        }
+
+        .beta-note {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
+        .btn-pricing {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-growth {
+            background: #8b5cf6;
+            color: white;
+            padding: 1.1rem 3.5rem;
+            font-weight: 800;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-growth:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.6);
+            background: #7c3aed;
+        }
+    </style>
+</head>
+
+<body class="home">
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <span>ZenFlow</span>
+        </div>
+        <div class="nav-links" style="display:flex; align-items:center; gap:1rem; position:relative;">
+            <!-- Notification Bell -->
+            <button id="notif-bell" aria-label="Notifications"
+                style="width:38px; height:38px; border-radius:999px; border:1px solid var(--glass-border); background:rgba(15,23,42,0.9); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 16v-4.5a6 6 0 0 0-12 0V16l-1.5 2H19.5L18 16Z" stroke="#e5e7eb" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M10 20a2 2 0 0 0 4 0" stroke="#e5e7eb" stroke-width="1.7" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+
+            <!-- Notification dropdown -->
+            <div id="notif-panel"
+                style="position:absolute; right:0; top:120%; width:280px; background:rgba(15,23,42,0.97); border-radius:18px; border:1px solid var(--glass-border); box-shadow:0 18px 45px rgba(15,23,42,0.9); padding:1rem 1.25rem; transform:translateY(-10px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:120;">
+                <p
+                    style="font-size:0.8rem; font-weight:700; color:#e5e7eb; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.5rem;">
+                    What’s new
+                </p>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                    Founding launch: use <strong style="color:#f97316;">FOUNDING50</strong> for 50% off your first year
+                    on any paid plan. Limited to the first 100 users.
+                </p>
+                <p style="font-size:0.8rem; color:var(--text-secondary);">
+                    Limited seats on <strong>Foundation</strong> and <strong>Growth Engine</strong> tiers. Lock in your
+                    founder pricing before we close beta.
+                </p>
+            </div>
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">← Back to pricing</a>
+        </div>
+    </nav>
+
+    <section class="pricing-section" style="min-height: calc(100vh - 80px); display:flex; align-items:center;">
+        <div class="pricing-grid">
+            <div class="pricing-card featured">
+                <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem; color: white;">
+                    {% if plan_label == 'Growth Engine' %}
+                    Claim Your Growth Engine Beta Seat
+                    {% else %}
+                    Claim Your Free Foundation Plan
+                    {% endif %}
+                </h1>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem;">
+                    {% if plan_label == 'Growth Engine' %}
+                    For the first <strong>{{ limit }} beta agencies</strong>, lock in Growth Engine at our founder-rate
+                    (worth <strong>₹399/mo</strong>), with early access to all automation features.
+                    {% else %}
+                    For the first <strong>{{ limit }} beta customers</strong>, we’re giving the full Foundation plan
+                    (worth <strong>₹199/mo</strong>) completely free for your first month.
+                    {% endif %}
+                </p>
+
+                {% if success %}
+                <p style="color:#22c55e; font-size:0.9rem; margin-bottom:1rem;">
+                    You’ve claimed your free month of the ₹199 Foundation plan. We’ll confirm your slot within 24 hours.
+                </p>
+                {% endif %}
+
+                <div class="beta-badge">
+                    {% if is_full %}
+                    All {{ limit }} beta slots claimed
+                    {% else %}
+                    Only {{ remaining }} free beta slot{% if remaining != 1 %}s{% endif %} left
+                    {% endif %}
+                </div>
+
+                {% if is_full %}
+                <p class="beta-note" style="margin-top: 0.75rem;">
+                    The beta offer is currently full. Join the waitlist by emailing us and we’ll notify you if a slot
+                    opens.
+                </p>
+                {% else %}
+                <form class="beta-form" action="{{ url_for('beta_foundation_signup') }}" method="POST"
+                    style="margin-top: 1.5rem;">
+                    <input type="hidden" name="plan" value="{{ plan_label }}">
+                    <div class="beta-form-row">
+                        <input type="text" name="name" placeholder="Your name" required>
+                    </div>
+                    <div class="beta-form-row">
+                        <input type="email" name="email" placeholder="Work email" required>
+                    </div>
+                    <div class="beta-form-row">
+                        <input type="text" name="instagram_handle" placeholder="@yourhandle" required>
+                    </div>
+                    <button type="submit" class="btn-pricing btn-growth" style="margin-top: 0.75rem;">
+                        Get it now – Free Foundation Plan →
+                    </button>
+                    <p class="beta-note" style="margin-top: 0.75rem;">
+                        No payment required today. We’ll review your account and confirm your beta slot within 24 hours.
+                    </p>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Notification bell behaviour
+        const bell = document.getElementById('notif-bell');
+        const panel = document.getElementById('notif-panel');
+        function togglePanel(forceOpen) {
+            if (!panel) return;
+            const isOpen = panel.style.opacity === '1';
+            const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+            if (shouldOpen) {
+                panel.style.opacity = '1';
+                panel.style.transform = 'translateY(0)';
+                panel.style.pointerEvents = 'auto';
+            } else {
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateY(-10px)';
+                panel.style.pointerEvents = 'none';
+            }
+        }
+
+        if (bell && panel) {
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePanel();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!panel.contains(e.target) && e.target !== bell) {
+                    togglePanel(false);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

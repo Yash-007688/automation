@@ -4,9 +4,26 @@
 {% block content %}
 <header class="top-bar">
     <h1>Automation Infrastructure</h1>
-    <div class="status-pill {{ 'active' if funnel.active else 'inactive' }}"
-        style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
-        {{ 'Engine Online' if funnel.active else 'Engine Paused' }}
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        {% if user.instagram_connected %}
+        <div class="status-pill active"
+            style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+            Instagram Connected
+        </div>
+        {% else %}
+        <a href="/dashboard/connect-instagram" class="btn btn-secondary"
+            style="text-decoration: none; padding: 0.5rem 1rem; font-size: 0.8rem;">
+            Connect Instagram
+        </a>
+        {% endif %}
+        <div class="status-pill {{ 'active' if funnel.active else 'inactive' }}"
+            style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+            {{ 'Engine Online' if funnel.active else 'Engine Paused' }}
+        </div>
+        <div class="status-pill"
+            style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+            Tokens: {{ user.free_tokens }} Free | {{ user.paid_tokens }} Paid
+        </div>
     </div>
 </header>
 
@@ -66,10 +83,19 @@
     <div class="card full-width">
         <div class="card-header">
             <h3>Target Content selection</h3>
+            {% if user.plan in ['Growth', 'Pro'] %}
             <form action="/dashboard/fetch-media" method="POST">
                 <button type="submit" class="btn btn-secondary" style="font-size: 0.8rem;">Refresh Media ↓</button>
             </form>
+            {% else %}
+            <div
+                style="font-size: 0.8rem; color: var(--text-secondary); background: rgba(248, 250, 252, 0.02); border-radius: 999px; padding: 0.4rem 0.9rem; border: 1px dashed rgba(148, 163, 184, 0.4);">
+                Reel targeting is available on <strong>Growth</strong> and <strong>Pro</strong> plans.
+                View pricing on the home page to upgrade.
+            </div>
+            {% endif %}
         </div>
+        {% if user.plan in ['Growth', 'Pro'] %}
         <div class="media-grid"
             style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1rem;">
             {% for media in active_media %}
@@ -93,6 +119,13 @@
             </div>
             {% endif %}
         </div>
+        {% else %}
+        <div
+            style="margin-top: 1.5rem; padding: 3rem; text-align: center; border-radius: 16px; border: 1px dashed var(--glass-border); background: rgba(15, 23, 42, 0.4); color: var(--text-secondary); font-size: 0.9rem;">
+            You’re currently on the <strong>{{ user.plan or 'Free' }}</strong> plan. Upgrade to unlock automated reel
+            targeting and multi-post routing.
+        </div>
+        {% endif %}
     </div>
 </div>
 

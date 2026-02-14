@@ -1,0 +1,13 @@
+__pycache__/
+instance/
+.env
+proxies.txt
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+*.db
+*.sqlite3

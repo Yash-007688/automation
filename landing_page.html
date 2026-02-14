@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transform Instagram Comments Into Revenue — DM Automation Agency</title>
+    <meta name="description"
+        content="We build Meta-approved DM funnels that convert Instagram comments and followers into booked calls and sales — without spending on ads.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --accent: #ec4899;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-alt: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--light);
+            overflow-x: hidden;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient);
+            color: white;
+            padding: 120px 20px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .hero .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.95;
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid white;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Social Proof */
+        .social-proof {
+            background: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .stat h3 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat p {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+
+        /* Problem Section */
+        .section {
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 60px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .problems {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .problem-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .problem-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .problem-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .problem-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .problem-card p {
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* Solution Section */
+        .solution {
+            background: var(--dark);
+            color: white;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature .icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 20px;
+        }
+
+        .feature h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .feature p {
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            background: linear-gradient(to bottom, #f8fafc, white);
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.15);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+
+        .badge {
+            background: var(--gradient);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .price span {
+            font-size: 1.2rem;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .pricing-card li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--dark);
+        }
+
+        .pricing-card li:before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .pricing-card li.unavailable {
+            opacity: 0.4;
+        }
+
+        .pricing-card li.unavailable:before {
+            content: "—";
+            color: var(--gray);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: var(--gradient-alt);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Comparison Section */
+        .comparison {
+            background: #1a1a1a;
+            color: white;
+            padding: 80px 20px;
+        }
+
+        .comparison-table {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2d2d2d;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .comparison-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #404040;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .comparison-header div:first-child {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            padding: 15px 0;
+            align-items: center;
+            border-bottom: 1px solid #404040;
+            transition: background 0.3s;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-name {
+            padding-left: 20px;
+            font-size: 1.1rem;
+        }
+
+        .status-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            margin: 0 auto;
+        }
+
+        .status-check {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-cross {
+            background: #ef4444;
+            color: white;
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="animate-in">Turn Instagram Comments Into Revenue</h1>
+            <p class="subtitle animate-in">We build Meta-approved DM automation systems that convert comments and
+                followers into booked calls and sales — without spending ₹1 on ads.</p>
+            <div class="cta-group animate-in">
+                <a href="#apply" class="btn btn-primary">Apply for Founding Cohort</a>
+                <a href="#pricing" class="btn btn-secondary">See Pricing</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="social-proof">
+        <div class="container">
+            <div class="stats">
+                <div class="stat">
+                    <h3>340%</h3>
+                    <p>Avg. DM response rate increase</p>
+                </div>
+                <div class="stat">
+                    <h3>47</h3>
+                    <p>Sales calls booked (per client/mo)</p>
+                </div>
+                <div class="stat">
+                    <h3>24hrs</h3>
+                    <p>Average setup time</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">You're Leaving Money in the Comments</h2>
+            <p class="section-subtitle">Every comment on your posts is a warm lead. But 90% of them disappear because
+                you can't reply fast enough.</p>
+            <div class="problems">
+                <div class="problem-card">
+                    <div class="icon">💸</div>
+                    <h3>Ad costs are crushing you</h3>
+                    <p>You're spending ₹30K–₹1L/month on ads when you have thousands of free leads in your DMs already.
+                    </p>
+                </div>
+                <div class="problem-card">
+                    <div class="icon">⏰</div>
+                    <h3>Manual replies don't scale</h3>
+                    <p>You can't reply to 100+ DMs a day while running your business. Hiring a VA costs ₹25K/month
+                        minimum.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="icon">📉</div>
+                    <h3>Leads go cold in 24 hours</h3>
+                    <p>By the time you reply, they've moved on to your competitor who responded instantly.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section solution">
+        <div class="container">
+            <h2 class="section-title">The Comment-to-Cash System™</h2>
+            <p class="section-subtitle">We build intelligent automation systems that work 24/7 — so you never miss a
+                lead again.</p>
+            <div class="features">
+                <div class="feature">
+                    <div class="icon">🤖</div>
+                    <h3>Instant Comment Response</h3>
+                    <p>When someone comments a keyword, they get a DM in under 10 seconds with your lead magnet or
+                        booking link.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">🎯</div>
+                    <h3>Personalized Follow-Up</h3>
+                    <p>Multi-step sequences that nurture leads from cold to booked — all without you lifting a finger.
+                    </p>
+                </div>
+                <div class="feature">
+                    <div class="icon">📊</div>
+                    <h3>Full Analytics Dashboard</h3>
+                    <p>See exactly how many leads you captured, how many clicked, and how many booked — in real-time.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="section comparison">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">Why Choose Us?</h2>
+            <p class="section-subtitle">See how we stack up against the competition.</p>
+
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <div>Features</div>
+                    <div>Others</div>
+                    <div>Us</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Full animated lectures</div>
+                    <div class="status-icon status-cross">✕</div>
+                    <div class="status-icon status-check">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">E-Books covering your entire syllabus</div>
+                    <div class="status-icon status-cross">✕</div>
+                    <div class="status-icon status-check">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Quizzes with proper analysis</div>
+                    <div class="status-icon status-cross">✕</div>
+                    <div class="status-icon status-check">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Worksheets (DPPs) at 0 cost</div>
+                    <div class="status-icon status-cross">✕</div>
+                    <div class="status-icon status-check">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Sample paper at 0 cost</div>
+                    <div class="status-icon status-cross">✕</div>
+                    <div class="status-icon status-check">✓</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Boring teacher's vibe</div>
+                    <div class="status-icon status-check">✓</div>
+                    <div class="status-icon status-cross">✕</div>
+                </div>
+
+                <div class="comparison-row">
+                    <div class="feature-name">Fake motivational videos</div>
+                    <div class="status-icon status-check">✓</div>
+                    <div class="status-icon status-cross">✕</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="section pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <p class="section-subtitle">No setup fees. No hidden costs. Cancel anytime.</p>
+            <div class="pricing-cards">
+                <!-- Starter -->
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">₹24,999<span>/mo</span></div>
+                    <p style="color: var(--gray); margin-bottom: 20px;">For testing the waters</p>
+                    <ul>
+                        <li>2 DM automation flows</li>
+                        <li>1 comment keyword set</li>
+                        <li>Basic lead capture (spreadsheet)</li>
+                        <li>1 welcome sequence</li>
+                        <li class="unavailable">CRM integration</li>
+                        <li class="unavailable">Monthly strategy call</li>
+                        <li class="unavailable">A/B testing</li>
+                    </ul>
+                    <a href="#apply" class="btn btn-secondary"
+                        style="width: 100%; text-align: center; margin-top: 20px;">Get Started</a>
+                </div>
+
+                <!-- Growth (Featured) -->
+                <div class="pricing-card featured">
+                    <span class="badge">⭐ MOST POPULAR</span>
+                    <h3>Growth</h3>
+                    <div class="price">₹44,999<span>/mo</span></div>
+                    <p style="color: var(--gray); margin-bottom: 20px;">For serious businesses</p>
+                    <ul>
+                        <li>5 DM automation flows</li>
+                        <li>5 comment keyword sets</li>
+                        <li>Full CRM integration</li>
+                        <li>3 welcome sequences</li>
+                        <li>Story reply automation</li>
+                        <li>1 monthly strategy call</li>
+                        <li>A/B testing included</li>
+                        <li>Performance dashboard</li>
+                    </ul>
+                    <a href="#apply" class="btn btn-primary"
+                        style="width: 100%; text-align: center; margin-top: 20px;">Start Free Trial</a>
+                </div>
+
+                <!-- Scale -->
+                <div class="pricing-card">
+                    <h3>Scale</h3>
+                    <div class="price">₹74,999<span>/mo</span></div>
+                    <p style="color: var(--gray); margin-bottom: 20px;">For agencies & high-volume</p>
+                    <ul>
+                        <li>Unlimited DM flows</li>
+                        <li>Unlimited keywords</li>
+                        <li>White-label dashboard</li>
+                        <li>Unlimited sequences</li>
+                        <li>Dedicated account manager</li>
+                        <li>2 strategy calls/month</li>
+                        <li>Priority support (12hr SLA)</li>
+                        <li>API access</li>
+                    </ul>
+                    <a href="#apply" class="btn btn-secondary"
+                        style="width: 100%; text-align: center; margin-top: 20px;">Contact Us</a>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 40px; color: var(--gray);">
+                💎 <strong>Founding Member Offer:</strong> Lock in ₹25K/month on Growth plan — 44% off forever. Only 5
+                spots left.
+            </p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="apply">
+        <div class="container">
+            <h2>Ready to Turn Comments Into Cash?</h2>
+            <p>Join 5 founding members getting their entire funnel built for 80% off — if you apply in the next 48
+                hours.</p>
+            <a href="https://forms.gle/your-form-link" class="btn btn-primary"
+                style="font-size: 1.2rem; padding: 20px 50px;">Apply Now (5 Spots Left)</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 DM Revenue Systems. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Meta-approved tools only. 100% compliant with Instagram's
+                Terms of Service.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,8 +1,55 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session, abort
+from functools import wraps
 import os
-from models import db, User, Funnel, Lead, AutomatedMedia
 import random
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
+
+import requests
+import json
+from models import db, User, Funnel, Lead, AutomatedMedia, BetaSignup, ActivityLog
+from instagram_api import InstagramAPI, exchange_short_lived_token, refresh_long_lived_token, validate_token, get_recent_mentions
+from cryptography.fernet import Fernet
+import base64
+import hashlib
+
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv is optional
+
+
+# Encryption utilities
+ENCRYPTION_KEY = os.getenv('ENCRYPTION_KEY', 'your-secret-key-for-encryption-change-this-in-production')
+
+
+def encrypt_password(password):
+    """Encrypt password using Fernet encryption"""
+    if not password:
+        return None
+    
+    # Use the environment variable as the key, or derive from a default
+    key = hashlib.sha256(ENCRYPTION_KEY.encode()).digest()
+    encoded_key = base64.urlsafe_b64encode(key)
+    f = Fernet(encoded_key)
+    return f.encrypt(password.encode()).decode()
+
+
+def decrypt_password(encrypted_password):
+    """Decrypt password using Fernet encryption"""
+    if not encrypted_password:
+        return None
+    
+    # Use the environment variable as the key, or derive from a default
+    key = hashlib.sha256(ENCRYPTION_KEY.encode()).digest()
+    encoded_key = base64.urlsafe_b64encode(key)
+    f = Fernet(encoded_key)
+    return f.decrypt(encrypted_password.encode()).decode()
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -13,6 +60,91 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+# Founding coupon config
+FOUNDING_COUPON_CODE = "FOUNDING50"
+FOUNDING_COUPON_LIMIT = 100  # first 100 paying users
+
+
+def get_founding_usage():
+    return User.query.filter_by(used_founding_coupon=True).count()
+
+
+def is_founding_coupon_active():
+    return get_founding_usage() < FOUNDING_COUPON_LIMIT
+
+
+# Plan-based limits
+PLAN_LIMITS = {
+    "Free": {
+        "allow_media_import": False,
+        "max_active_media": 0,  # no reel targeting on free
+    },
+    "Starter": {
+        "allow_media_import": True,
+        "max_active_media": 3,
+    },
+    "Growth": {
+        "allow_media_import": True,
+        "max_active_media": 10,
+    },
+    "Pro": {
+        "allow_media_import": True,
+        "max_active_media": None,  # unlimited
+    },
+}
+
+
+def get_user_and_limits():
+    """Helper: get current user and their plan limits."""
+    uid = session.get('user_id')
+    if not uid:
+        return None, PLAN_LIMITS["Free"]
+    user = User.query.get(uid)
+    if not user:
+        return None, PLAN_LIMITS["Free"]
+    
+    # Check and reset tokens if needed
+    check_and_reset_tokens(user)
+    
+    plan = getattr(user, "plan", "Free") or "Free"
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS["Free"])
+    return user, limits
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login_ui'))
+        user = User.query.get(session['user_id'])
+        if not user or not user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def log_activity(user_id, action, details=None):
+    try:
+        log = ActivityLog(user_id=user_id, action=action, details=details)
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error logging activity: {e}")
+
+
+def check_and_reset_tokens(user):
+    """Refill free tokens to 4000 every 30 days."""
+    if not user.tokens_reset_at:
+        user.tokens_reset_at = datetime.utcnow()
+        user.free_tokens = 4000
+        db.session.commit()
+        return
+
+    # If it's been more than 30 days since last reset
+    if datetime.utcnow() > user.tokens_reset_at + timedelta(days=30):
+        user.free_tokens = 4000
+        user.tokens_reset_at = datetime.utcnow()
+        db.session.commit()
+
 
 # Mock data for niches
 NICHE_DATA = {
@@ -44,144 +176,183 @@ def home():
 def login_ui():
     return render_template('login.html')
 
-from instagrapi import Client
-from instagrapi.exceptions import TwoFactorRequired, BadPassword, ChallengeRequired
 
-# Initialize a global client or better, one per request if not using sessions
-# For this demo, we'll use a simplified session-based approach
-# In a real production app, you'd store the session (cl.get_settings()) in the DB
 
-@app.route('/auth/direct', methods=['POST'])
-def auth_direct():
-    username = request.form.get('username', '').strip().lstrip('@')
-    password = request.form.get('password', '')
-    
-    if not username or not password:
+@app.route('/auth/instagram')
+def auth_instagram():
+    client_id = os.getenv('FB_APP_ID', '')
+    redirect_uri = os.getenv('FB_REDIRECT_URI', 'http://localhost:5000/auth/instagram/callback')
+    scopes = os.getenv(
+        'FB_INSTAGRAM_SCOPES',
+        'instagram_basic,instagram_manage_messages,instagram_manage_comments,pages_show_list,pages_read_engagement,pages_messaging'
+    )
+
+    if not client_id or not redirect_uri:
         return redirect(url_for('login_ui'))
 
-    # DEV BACKDOOR: admin/admin
-    if username.lower() == 'admin' and password == 'admin':
-        user = User.query.filter_by(username='admin').first()
-        if not user:
-            user = User(
-                username='admin',
-                niche='SaaS',
-                bio='Master admin account for ZenFlow Development.',
-                avatar='A',
-                followers=9999,
-                following=0
-            )
-            db.session.add(user)
-            db.session.commit()
-            
-            # Default funnel for admin
-            funnel = Funnel(user_id=user.id, wakeword="ADMIN", script="Admin script active.", link="https://zenflow.agency")
-            db.session.add(funnel)
-            db.session.commit()
-            
-        session['user_id'] = user.id
+    state = os.urandom(16).hex()
+    session['oauth_state'] = state
+
+    params = {
+        'client_id': client_id,
+        'redirect_uri': redirect_uri,
+        'state': state,
+        'response_type': 'code',
+        'scope': scopes,
+    }
+    auth_url = f"https://www.facebook.com/v18.0/dialog/oauth?{urlencode(params)}"
+    return redirect(auth_url)
+
+@app.route('/auth/instagram/callback')
+def auth_instagram_callback():
+    if 'error' in request.args:
         return redirect(url_for('dashboard'))
     
-    # Store credentials for the 2FA/Security steps
-    session['temp_user'] = {
-        "username": username,
-        "password": password
+    if 'code' not in request.args:
+        return redirect(url_for('dashboard'))
+        
+    code = request.args.get('code')
+    state = request.args.get('state')
+    
+    # Verify state to prevent CSRF
+    if state != session.get('oauth_state'):
+        return "Invalid state parameter", 400
+        
+    # Exchange code for token
+    client_id = os.getenv('FB_APP_ID')
+    client_secret = os.getenv('FB_APP_SECRET')
+    redirect_uri = os.getenv('FB_REDIRECT_URI', 'http://localhost:5000/auth/instagram/callback')
+    
+    token_url = "https://graph.facebook.com/v18.0/oauth/access_token"
+    params = {
+        'client_id': client_id,
+        'redirect_uri': redirect_uri,
+        'client_secret': client_secret,
+        'code': code
     }
     
-    cl = Client()
     try:
-        print(f"Attempting login for: {username}")
-        cl.login(username, password)
-        return finalize_login(cl, username)
+        response = requests.get(token_url, params=params)
+        data = response.json()
         
-    except TwoFactorRequired as e:
-        print("2FA Required")
-        session['2fa_ver_method'] = 1
-        return redirect(url_for('auth_2fa'))
-    except BadPassword as e:
-        print(f"Bad Password Error: {e}")
-        return redirect(url_for('login_ui', error="invalid_credentials"))
+        if 'access_token' not in data:
+            print(f"Error getting token: {data}")
+            return redirect(url_for('dashboard'))
+            
+        short_lived_token = data['access_token']
+        user_id = data.get('user_id') # This is the app-scoped user ID
+        
+        # Exchange for long-lived token
+        long_lived_data = exchange_short_lived_token(short_lived_token)
+        
+        if not long_lived_data or 'access_token' not in long_lived_data:
+            print("Failed to get long-lived token")
+            # Fallback to short lived if exchange fails
+            final_token = short_lived_token
+            expires_in = 3600 # 1 hour
+        else:
+            final_token = long_lived_data['access_token']
+            expires_in = long_lived_data.get('expires_in', 5184000) # 60 days
+            
+        # Get user profile info
+        api = InstagramAPI(final_token)
+        profile = api.get_user_profile()
+        
+        if not profile:
+            print("Failed to fetch profile")
+            return redirect(url_for('dashboard'))
+            
+        # Link to current user
+        if 'user_id' in session:
+            user = User.query.get(session['user_id'])
+            user.fb_access_token = final_token # Store as FB token (it's actually IG Graph API token)
+            user.ig_access_token = final_token
+            user.token_expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            user.fb_user_id = profile.get('id')
+            user.ig_user_id = profile.get('id')
+            user.ig_username = profile.get('username')
+            user.followers = profile.get('followers_count', 0)
+            user.following = profile.get('follows_count', 0)
+            
+            # Detect niche if not set
+            if not user.niche or user.niche == 'Unknown':
+                # We don't have bio in the basic display API usually, but if we do...
+                # Actually, Graph API /me fields does not strictly include biography in all permissions.
+                # But we requested it in get_user_profile.
+                pass 
+                
+            db.session.commit()
+            
+            # Generate leads if fresh
+            if not Lead.query.filter_by(user_id=user.id).first():
+                 sample_handles = ["jessica_ux", "mike_fitness", "sarah_growth", "tom_logic", "emma_vlogs", "dev_ops", "crypto_king", "luxury_life"]
+                 for _ in range(random.randint(5, 10)):
+                    lead = Lead(
+                        user_id=user.id,
+                        handle=random.choice(sample_handles) + str(random.randint(1, 99)),
+                        status=random.choice(["Qualified", "Nurturing"]),
+                        timestamp=datetime.utcnow(),
+                        niche_relevance="High"
+                    )
+                    db.session.add(lead)
+                 db.session.commit()
+                 
     except Exception as e:
-        print(f"Unexpected Login Error: {e}")
-        return redirect(url_for('auth_security'))
-
-@app.route('/auth/security')
-def auth_security():
-    if 'temp_user' not in session:
-        return redirect(url_for('login_ui'))
-    return render_template('security_alert.html')
-
-def finalize_login(cl, username):
-    # Fetch real user info
-    user_info = cl.user_info_by_username(username)
-    
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        niche = detect_niche(user_info.biography or username)
-        user = User(
-            username=username,
-            niche=niche,
-            bio=user_info.biography,
-            avatar=username[0].upper(),
-            followers=user_info.follower_count,
-            following=user_info.following_count
-        )
-        db.session.add(user)
-        db.session.commit()
+        print(f"OAuth Error: {str(e)}")
         
-        # Create default funnel
-        funnel = Funnel(
-            user_id=user.id,
-            wakeword="GROW",
-            script="Hey! Thanks for commenting. Here is the link you requested: {link}",
-            link="https://zenflow.agency/demo"
-        )
-        db.session.add(funnel)
-        
-        # Generate initial leads locally in DB
-        sample_handles = ["jessica_ux", "mike_fitness", "sarah_growth", "tom_logic", "emma_vlogs", "dev_ops", "crypto_king", "luxury_life"]
-        for _ in range(random.randint(15, 25)):
-            lead = Lead(
-                user_id=user.id,
-                handle=random.choice(sample_handles) + str(random.randint(1, 99)),
-                status=random.choice(["Qualified", "Nurturing", "Booked"]),
-                timestamp=datetime.utcnow() - timedelta(minutes=random.randint(1, 1440)),
-                niche_relevance="High"
-            )
-            db.session.add(lead)
-        db.session.commit()
-    else:
-        # Update existing user data
-        user.followers = user_info.follower_count
-        user.following = user_info.following_count
-        user.bio = user_info.biography
-        db.session.commit()
-
-    session['user_id'] = user.id
-    session.pop('temp_user', None)
     return redirect(url_for('dashboard'))
 
-@app.route('/auth/2fa')
-def auth_2fa():
-    if 'temp_user' not in session:
-        return redirect(url_for('login_ui'))
-    return render_template('auth_2fa.html')
+@app.route('/signup', methods=['GET', 'POST'])
+def signup_post():
+    if request.method == 'GET':
+        return render_template('signup.html')
+    
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
+    full_name = request.form.get('full_name', '')
+    
+    if User.query.filter_by(username=username).first():
+        return "Username already exists", 400
+        
+    user = User(
+        username=username,
+        full_name=full_name,
+        password_hash=generate_password_hash(password),
+        niche='Unknown',
+        avatar=username[0].upper() if username else 'Z',
+        free_tokens=4000,
+        paid_tokens=0,
+        tokens_reset_at=datetime.utcnow()
+    )
+    db.session.add(user)
+    db.session.commit()
+    
+    # Create default funnel
+    funnel = Funnel(user_id=user.id, wakeword="GROW", script="Hey! Check this out: {link}", link="https://zenflow.agency")
+    db.session.add(funnel)
+    db.session.commit()
+    
+    log_activity(user.id, "User signup", f"User {username} signed up.")
+    
+    session['user_id'] = user.id
+    return redirect(url_for('dashboard'))
 
-@app.route('/auth/verify', methods=['POST'])
-def auth_verify():
-    if 'temp_user' not in session:
-        return redirect(url_for('login_ui'))
+@app.route('/auth/login', methods=['POST'])
+def login_post():
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
     
-    temp_user = session['temp_user']
-    code = "".join([request.form.get(f'c{i}') for i in range(1, 7)])
+    user = User.query.filter_by(username=username).first()
     
-    cl = Client()
-    try:
-        # In instagrapi, login with 2FA code
-        cl.login(temp_user['username'], temp_user['password'], verification_code=code)
-        return finalize_login(cl, temp_user['username'])
-    except Exception as e:
-        return redirect(url_for('auth_2fa')) # Or show error
+    if user and user.password_hash and check_password_hash(user.password_hash, password):
+        session['user_id'] = user.id
+        if user.username == 'adism' or user.is_admin:
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('dashboard'))
+        
+    return redirect(url_for('login_ui')) # Failed login
+
+
 
 def get_dashboard_context():
     if 'user_id' not in session:
@@ -218,12 +389,17 @@ def get_dashboard_context():
 
     user_data = {
         "username": user.username,
+        "plan": getattr(user, "plan", "Free"),
         "niche": user.niche,
         "niche_color": NICHE_DATA.get(user.niche, NICHE_DATA["Unknown"])["color"],
         "keywords": NICHE_DATA.get(user.niche, NICHE_DATA["Unknown"])["suggested_keywords"],
         "avatar": user.avatar,
         "followers": user.followers,
-        "following": user.following
+        "following": user.following,
+        "instagram_connected": bool(user.ig_user_id),  # Add Instagram connection status
+        "free_tokens": user.free_tokens,
+        "paid_tokens": user.paid_tokens,
+        "total_tokens": user.free_tokens + user.paid_tokens
     }
 
     return {
@@ -282,13 +458,138 @@ def get_stats():
         "revenue_roi": "$14,200"
     })
 
+# Admin Routes
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    users_count = User.query.count()
+    leads_count = Lead.query.count()
+    funnels_count = Funnel.query.count()
+    activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(20).all()
+    user = User.query.get(session['user_id'])
+    return render_template('admin.html', 
+                          user=user,
+                          users_count=users_count, 
+                          leads_count=leads_count, 
+                          funnels_count=funnels_count,
+                          activities=activities)
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    user = User.query.get(session['user_id'])
+    users = User.query.all()
+    
+    # Pre-decrypt passwords for the view
+    users_with_passwords = []
+    for u in users:
+        decrypted = "Not set"
+        if u.ig_password_encrypted:
+            try:
+                decrypted = decrypt_password(u.ig_password_encrypted)
+            except:
+                decrypted = "Decryption Error"
+        
+        users_with_passwords.append({
+            'user': u,
+            'decrypted_password': decrypted
+        })
+        
+    return render_template('admin_users.html', user=user, users=users_with_passwords)
+
+@app.route('/admin/users/<int:user_id>/add-tokens', methods=['POST'])
+@admin_required
+def add_tokens(user_id):
+    user = User.query.get_or_404(user_id)
+    user.paid_tokens += 1000
+    db.session.commit()
+    log_activity(session['user_id'], "Admin: added tokens", f"Added 1,000 paid tokens to @{user.username} (ID: {user_id})")
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == session['user_id']:
+        return jsonify({"success": False, "error": "Cannot delete self"}), 400
+    
+    # Cascade delete is handled by DB preferably, but let's be safe
+    Funnel.query.filter_by(user_id=user_id).delete()
+    Lead.query.filter_by(user_id=user_id).delete()
+    AutomatedMedia.query.filter_by(user_id=user_id).delete()
+    ActivityLog.query.filter_by(user_id=user_id).delete()
+    
+    db.session.delete(user)
+    db.session.commit()
+    log_activity(session['user_id'], "Admin: deleted user", f"Deleted user {user.username} (ID: {user_id})")
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/users/<int:user_id>/toggle-admin', methods=['POST'])
+@admin_required
+def toggle_admin(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == session['user_id']:
+        return jsonify({"success": False, "error": "Cannot demote self"}), 400
+    
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    action = "promoted to admin" if user.is_admin else "demoted from admin"
+    log_activity(session['user_id'], f"Admin: {action}", f"User {user.username} (ID: {user_id})")
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/activities')
+@admin_required
+def admin_activities():
+    user = User.query.get(session['user_id'])
+    activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
+    return render_template('admin_activities.html', user=user, activities=activities)
+
+@app.route('/api/user/tokens')
+def get_user_tokens():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user = User.query.get(session['user_id'])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    # Check and reset tokens if needed (just in case they haven't visited dashboard)
+    check_and_reset_tokens(user)
+    
+    return jsonify({
+        "free_tokens": user.free_tokens,
+        "paid_tokens": user.paid_tokens,
+        "total_tokens": user.free_tokens + user.paid_tokens,
+        "max_free": 4000
+    })
+
+
+@app.route('/api/coupon/founding50/status')
+def founding_coupon_status():
+    """Public endpoint to let frontend know if FOUNDING50 is still valid."""
+    used = get_founding_usage()
+    remaining = max(FOUNDING_COUPON_LIMIT - used, 0)
+    return jsonify({
+        "code": FOUNDING_COUPON_CODE,
+        "limit": FOUNDING_COUPON_LIMIT,
+        "used": used,
+        "remaining": remaining,
+        "active": remaining > 0,
+    })
+
 @app.route('/dashboard/fetch-media', methods=['POST'])
 def fetch_media():
-    if 'user_id' not in session:
+    user, limits = get_user_and_limits()
+    if not user:
         return jsonify({"success": False}), 401
-    
-    user_id = session['user_id']
-    
+
+    # Enforce plan: some tiers can't import media at all
+    if not limits.get("allow_media_import", False):
+        # Silently redirect back; UI should already hide this on unsupported plans
+        return redirect(url_for('dashboard'))
+
+    user_id = user.id
+
     # Simulated content for the selection grid
     mock_media = [
         {"id": "media_1", "thumb": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&h=300&fit=crop", "cap": "Reel 01: Coding Flow"},
@@ -312,15 +613,26 @@ def fetch_media():
 
 @app.route('/dashboard/media/toggle/<int:mid>', methods=['POST'])
 def toggle_media(mid):
-    if 'user_id' not in session:
+    user, limits = get_user_and_limits()
+    if not user:
         return jsonify({"success": False}), 401
-    
+
     media = AutomatedMedia.query.get(mid)
-    if media and media.user_id == session['user_id']:
+    if media and media.user_id == user.id:
+        # If we're about to activate, enforce max_active_media
+        if not media.is_active:
+            max_active = limits.get("max_active_media")
+            if max_active is not None:
+                active_count = AutomatedMedia.query.filter_by(
+                    user_id=user.id, is_active=True
+                ).count()
+                if active_count >= max_active:
+                    return jsonify({"success": False, "reason": "limit_reached"}), 403
+
         media.is_active = not media.is_active
         db.session.commit()
         return jsonify({"success": True, "state": media.is_active})
-    
+
     return jsonify({"success": False}), 404
 
 @app.route('/lead/update-status/<int:lead_id>', methods=['POST'])
@@ -373,5 +685,231 @@ def export_leads():
     output.headers["Content-type"] = "text/csv"
     return output
 
+@app.route('/beta-foundation-signup', methods=['POST'])
+def beta_foundation_signup():
+    name = request.form.get('name', '').strip()
+    email = request.form.get('email', '').strip()
+    handle = request.form.get('instagram_handle', '').strip().lstrip('@')
+    plan = request.form.get('plan', 'Foundation').strip() or 'Foundation'
+
+    # Per-plan limits
+    if plan == 'Growth Engine':
+        limit = 25
+    else:
+        limit = 49  # Foundation default
+
+    if BetaSignup.query.filter_by(plan=plan).count() >= limit:
+        return redirect(url_for('beta_foundation_page', full='1', plan=('growth' if plan == 'Growth Engine' else 'foundation')))
+
+    if not name or not email or not handle:
+        return redirect(url_for('beta_foundation_page', plan=('growth' if plan == 'Growth Engine' else 'foundation')))
+
+    signup = BetaSignup(name=name, email=email, instagram_handle=handle, plan=plan)
+    db.session.add(signup)
+    db.session.commit()
+
+    return redirect(url_for('beta_foundation_page', success='1'))
+
+@app.route('/beta-foundation')
+def beta_foundation_page():
+    # Determine which plan's beta page to show
+    raw_plan = request.args.get('plan', 'foundation').lower()
+    if raw_plan == 'growth':
+        plan_label = 'Growth Engine'
+        limit = 25
+    else:
+        plan_label = 'Foundation'
+        limit = 49
+
+    total_signups = BetaSignup.query.filter_by(plan=plan_label).count()
+    remaining = max(limit - total_signups, 0)
+    is_full = total_signups >= limit
+
+    success = request.args.get('success') == '1'
+    full_flag = request.args.get('full') == '1'
+
+    return render_template(
+        'beta_foundation.html',
+        plan_label=plan_label,
+        limit=limit,
+        is_full=is_full,
+        remaining=remaining,
+        success=success,
+        full_flag=full_flag
+    )
+
+def handle_new_comment(comment_data):
+    """Process new comment notifications"""
+    print(f"New comment received: {comment_data}")
+    # Add your comment processing logic here
+    # Could trigger automated responses, analytics, etc.
+    pass
+
+
+def handle_new_mention(mention_data):
+    """Process new mention/message notifications"""
+    print(f"New mention received: {mention_data}")
+    # Add your mention/message processing logic here
+    # Could trigger automated responses, etc.
+    pass
+
+
+def check_new_instagram_activity():
+    """Check for new Instagram activity (comments, mentions) periodically"""
+    # Get all users with connected Instagram accounts
+    connected_users = User.query.filter(
+        (User.ig_access_token.isnot(None)) | (User.ig_username.isnot(None))
+    ).all()
+    
+    for user in connected_users:
+        # Check if using OAuth (token-based) or direct authentication (username/password)
+        if user.ig_access_token:
+            # OAuth method
+            if user.token_expires_at and user.token_expires_at < datetime.utcnow():
+                # Try to refresh the token
+                if not refresh_long_lived_token(user):
+                    print(f"Could not refresh token for user {user.username}")
+                    continue
+            
+            try:
+                instagram_api = InstagramAPI(user.ig_access_token)
+                recent_mentions = get_recent_mentions(user)
+                
+                # Process each mention/comment
+                for mention in recent_mentions:
+                    # Check if this is a wake word that should trigger automation
+                    wake_word = mention.get('text', '').upper()
+                    
+                    # Get user's funnel to see if there are any matching wake words
+                    funnel = Funnel.query.filter_by(user_id=user.id).first()
+                    if funnel and funnel.active and funnel.wakeword in wake_word:
+                        # Trigger automated response
+                        handle_automation_trigger(user, mention)
+                        
+            except Exception as e:
+                print(f"Error checking Instagram activity for user {user.username} (OAuth): {str(e)}")
+        elif user.ig_username and user.ig_password_encrypted:
+            # Direct authentication method
+            try:
+                from instagram_api import direct_api_call
+                from cryptography.fernet import Fernet
+                import base64
+                import hashlib
+                
+                # Decrypt password
+                key = hashlib.sha256(os.getenv('ENCRYPTION_KEY', 'your-secret-key-for-encryption-change-this-in-production').encode()).digest()
+                encoded_key = base64.urlsafe_b64encode(key)
+                f = Fernet(encoded_key)
+                decrypted_password = f.decrypt(user.ig_password_encrypted.encode()).decode()
+                
+                # Use direct API to check for activity
+                client = direct_api_call(user.ig_username, decrypted_password, None)
+                if client:
+                    # Process activity using direct API
+                    # This would involve getting recent comments, etc. using instagrapi
+                    # For now, we'll log that we're using direct auth
+                    print(f"Checking activity for {user.username} using direct authentication")
+                    
+            except Exception as e:
+                print(f"Error checking Instagram activity for user {user.username} (Direct Auth): {str(e)}")
+
+
+def handle_automation_trigger(user, mention_data):
+    """Handle automation trigger when wake word is detected"""
+    # Check for tokens
+    if user.free_tokens > 0:
+        token_source = "free_tokens"
+    elif user.paid_tokens > 0:
+        token_source = "paid_tokens"
+    else:
+        print(f"User {user.username} has 0 tokens remaining. Automation skipped.")
+        return
+
+    # Get user's funnel
+    funnel = Funnel.query.filter_by(user_id=user.id).first()
+    if not funnel or not funnel.active:
+        return
+    
+    # Create an automated response
+    try:
+        instagram_api = InstagramAPI(user.ig_access_token)
+        
+        # Format the response script with the link
+        response_script = funnel.script.format(link=funnel.link)
+        
+        # Post a comment in response to the mention
+        result = instagram_api.post_comment(mention_data['media_id'], response_script)
+        
+        if result:
+            # Deduct token
+            if token_source == "free_tokens":
+                user.free_tokens -= 1
+            else:
+                user.paid_tokens -= 1
+            
+            db.session.commit()
+            print(f"Posted automated response to {mention_data['username']}'s comment. Used 1 {token_source}.")
+        else:
+            print(f"Failed to post response to {mention_data['username']}'s comment")
+            
+    except Exception as e:
+        print(f"Error posting automated response: {str(e)}")
+
+def refresh_instagram_token(user):
+    """Refresh Instagram long-lived token if expired"""
+    return refresh_long_lived_token(user)
+
+
+# Import threading for background tasks
+import threading
+import time
+
+
+def run_periodic_tasks():
+    """Run periodic tasks in the background"""
+    while True:
+        try:
+            with app.app_context():
+                check_new_instagram_activity()
+        except Exception as e:
+            print(f"Error in periodic tasks: {str(e)}")
+        
+        # Wait 5 minutes before next check
+        time.sleep(300)
+
+
+@app.route('/webhook/instagram', methods=['GET', 'POST'])
+def instagram_webhook():
+    """Instagram webhook endpoint for receiving updates"""
+    # Verify webhook
+    if request.method == 'GET':
+        hub_challenge = request.args.get('hub.challenge')
+        hub_verify_token = request.args.get('hub.verify_token')
+        
+        if hub_verify_token == os.getenv('WEBHOOK_VERIFY_TOKEN'):
+            return hub_challenge, 200
+        else:
+            return 'Verification token mismatch', 403
+    
+    # Process webhook payload
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            print(f"Webhook received: {json.dumps(data, indent=2)}")
+            
+            # Process webhook using the InstagramAPI module
+            from instagram_api import process_webhook_payload
+            process_webhook_payload(data)
+            
+            return {'success': True}, 200
+        except Exception as e:
+            print(f"Error processing webhook: {str(e)}")
+            return {'success': False, 'error': str(e)}, 500
+
+
 if __name__ == '__main__':
+    # Start periodic tasks in a background thread
+    periodic_thread = threading.Thread(target=run_periodic_tasks, daemon=True)
+    periodic_thread.start()
+    
     app.run(debug=True, port=5000)
