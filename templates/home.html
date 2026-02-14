@@ -9,10 +9,172 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/lib/lucide.min.js"></script>
     <style>
+        :root {
+            --bg-mesh-1: rgba(139, 92, 246, 0.15);
+            --bg-mesh-2: rgba(6, 182, 212, 0.1);
+            --bg-mesh-3: rgba(244, 63, 94, 0.05);
+        }
+
+        /* DYNAMIC MESH BACKGROUND */
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #05070a;
+            overflow: hidden;
+        }
+
+        .mesh-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.6;
+            animation: moveBlob 20s infinite alternate;
+        }
+
+        .blob-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--bg-mesh-1);
+            top: -10%;
+            left: -10%;
+            animation-duration: 25s;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--bg-mesh-2);
+            bottom: -10%;
+            right: -10%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--bg-mesh-3);
+            top: 40%;
+            left: 50%;
+            animation-duration: 20s;
+            animation-delay: -10s;
+        }
+
+        @keyframes moveBlob {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(100px, 50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-50px, 150px) scale(0.9);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        /* FAB - Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            background: #8b5cf6;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 999px;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fab:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.7);
+            background: #7c3aed;
+        }
+
+        /* FAQ SECTION */
+        .faq-section {
+            padding: 8rem 3.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 4rem;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question {
+            padding: 1.5rem 2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .faq-answer {
+            padding: 0 2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .faq-item.active {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.02);
+        }
+
+        .faq-item.active .faq-answer {
+            padding-bottom: 1.5rem;
+            max-height: 200px;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s ease;
+            color: #8b5cf6;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+
         .hero {
             padding: 10rem 3.5rem;
             text-align: center;
-            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            position: relative;
         }
 
         .hero h1 {
@@ -57,7 +219,6 @@
         .pricing-section {
             padding: 12rem 3.5rem;
             text-align: center;
-            background: radial-gradient(circle at top, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
         }
 
         /* PERSISTENT FOCUS ANIMATION */
@@ -678,6 +839,17 @@
 </head>
 
 <body class="home">
+    <div class="mesh-bg">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+    </div>
+
+    <a href="/login" class="fab">
+        <i data-lucide="zap"></i>
+        Start Now
+    </a>
+
     <nav class="navbar">
         <a href="/" class="logo" style="text-decoration: none;">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZenFlow"
@@ -1198,6 +1370,60 @@
         </div>
     </section>
 
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section reveal">
+        <h2 style="font-size: 3.5rem; font-weight: 800; text-align: center; color: white; margin-bottom: 1rem;">Common
+            Questions</h2>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); text-align: center; margin-bottom: 4rem;">Everything
+            you need to know about ZenFlow.</p>
+
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How safe is my Instagram account?</span>
+                    <i data-lucide="plus" class="faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    ZenFlow is 100% Meta-Approved. We use the official Instagram Graph API, which means your account is
+                    never at risk of shadowbans or suspensions common with "bot" software.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Do I need to hire a Virtual Assistant?</span>
+                    <i data-lucide="plus" class="faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    No. ZenFlow’s AI handles the qualification and booking process that usually requires a VA. You save
+                    $800-$1,500/month in overhead instantly.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is a "Founder Account"?</span>
+                    <i data-lucide="plus" class="faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Founder accounts are limited to the first 50 agencies. You lock in a 40% discount for life. Even
+                    when our public pricing increases in March 2026, your rate stays the same.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I cancel my plan anytime?</span>
+                    <i data-lucide="plus" class="faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes. There are no long-term contracts. You can cancel, upgrade, or downgrade your plan directly from
+                    your dashboard with one click.
+                </div>
+            </div>
+        </div>
+    </section>
+
     <div id="videoModal" class="video-modal">
         <div class="video-container">
             <button class="close-modal" onclick="closeVideo()">✕ Close</button>
@@ -1368,7 +1594,45 @@
                 if (e.target === videoModal) closeVideo();
             });
         }
+        // FAQ Accordion Interactivity
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                const isActive = item.classList.contains('active');
+
+                // Close all other items
+                document.querySelectorAll('.faq-item').forEach(otherItem => {
+                    otherItem.classList.remove('active');
+                });
+
+                // Toggle current item
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // FAB visibility on scroll
+        const fab = document.querySelector('.fab');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                fab.style.opacity = '1';
+                fab.style.pointerEvents = 'auto';
+                fab.style.transform = 'translateY(0)';
+            } else {
+                fab.style.opacity = '0';
+                fab.style.pointerEvents = 'none';
+                fab.style.transform = 'translateY(20px)';
+            }
+        });
+        // Initial state for FAB
+        if (fab) {
+            fab.style.opacity = '0';
+            fab.style.transform = 'translateY(20px)';
+            fab.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }
     </script>
+
 </body>
 
 </html>
