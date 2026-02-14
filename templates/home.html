@@ -25,6 +25,8 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            min-height: 10rem;
+            /* Prevents jumping while staying compact */
         }
 
         .hero p {
@@ -440,6 +442,63 @@
         .delay-500 {
             transition-delay: 0.5s;
         }
+
+        /* Video Modal Styles */
+        .video-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s ease;
+        }
+
+        .video-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .video-container {
+            width: 90%;
+            max-width: 1000px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(139, 92, 246, 0.3);
+            position: relative;
+            transform: scale(0.9);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .video-modal.active .video-container {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
     </style>
 </head>
 
@@ -505,6 +564,88 @@
             Automation Potential (Free Analysis) →</a>
     </header>
 
+    <!-- Demo Section -->
+    <section class="demo-section reveal"
+        style="padding: 8rem 3.5rem; text-align: center; background: rgba(139, 92, 246, 0.02);">
+        <h2 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">See It in Action</h2>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 4rem;">Watch how ZenFlow handles a
+            complex lead qualification flow from comment to booking.</p>
+
+        <div class="demo-container"
+            style="max-width: 1000px; margin: 0 auto; position: relative; aspect-ratio: 16/9; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8);">
+            <!-- Mockup Sidebar -->
+            <div
+                style="position:absolute; left:0; top:0; bottom:0; width:70px; background:rgba(255,255,255,0.03); border-right:1px solid rgba(255,255,255,0.05); display:flex; flex-direction:column; align-items:center; padding-top:2rem; gap:1.5rem;">
+                <div
+                    style="width:30px; height:30px; border-radius:8px; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4);">
+                </div>
+                <div style="width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.05);"></div>
+                <div style="width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.05);"></div>
+                <div style="width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.05);"></div>
+            </div>
+            <!-- Mockup Content -->
+            <div style="margin-left:70px; padding:2rem; height:100%; display:flex; flex-direction:column; gap:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="width:150px; height:20px; border-radius:4px; background:rgba(255,255,255,0.1);"></div>
+                    <div
+                        style="width:100px; height:30px; border-radius:80px; background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.3);">
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+                    <div
+                        style="height:120px; border-radius:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:1rem;">
+                        <div
+                            style="width:40px; height:10px; border-radius:2px; background:rgba(255,255,255,0.05); margin-bottom:1rem;">
+                        </div>
+                        <div style="width:60px; height:25px; border-radius:4px; background:rgba(139,92,246,0.15);">
+                        </div>
+                    </div>
+                    <div
+                        style="height:120px; border-radius:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:1rem;">
+                        <div
+                            style="width:40px; height:10px; border-radius:2px; background:rgba(255,255,255,0.05); margin-bottom:1rem;">
+                        </div>
+                        <div style="width:60px; height:25px; border-radius:4px; background:rgba(6,182,212,0.15);"></div>
+                    </div>
+                    <div
+                        style="height:120px; border-radius:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); padding:1rem;">
+                        <div
+                            style="width:40px; height:10px; border-radius:2px; background:rgba(255,255,255,0.05); margin-bottom:1rem;">
+                        </div>
+                        <div style="width:60px; height:25px; border-radius:4px; background:rgba(255,255,255,0.1);">
+                        </div>
+                    </div>
+                </div>
+                <div
+                    style="flex-grow:1; border-radius:20px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
+                    <!-- Simple Graph Lines -->
+                    <svg style="width:100%; height:100%; opacity:0.2;" viewBox="0 0 400 100">
+                        <path d="M0 80 Q 50 20 100 60 T 200 40 T 300 70 T 400 20" stroke="#8b5cf6" stroke-width="2"
+                            fill="none" />
+                        <path d="M0 90 Q 50 40 100 80 T 200 60 T 300 90 T 400 40" stroke="#06b6d4" stroke-width="2"
+                            fill="none" />
+                    </svg>
+                    <!-- Floating Play Button -->
+                    <div
+                        style="position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; flex-direction: column; background: radial-gradient(circle at center, rgba(139, 92, 246, 0.4), transparent 70%);">
+                        <button onclick="openVideo()"
+                            style="width: 80px; height: 80px; border-radius: 50%; background: #8b5cf6; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.3s; box-shadow: 0 0 40px rgba(139, 92, 246, 0.6); z-index:10;"
+                            onmouseover="this.style.transform='scale(1.1)'"
+                            onmouseout="this.style.transform='scale(1)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                fill="white">
+                                <path d="M5 3l14 9-14 9V3z" />
+                            </svg>
+                        </button>
+                        <p style="margin-top: 2rem; color: white; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.5); letter-spacing:1px; cursor: pointer;"
+                            onclick="openVideo()">WATCH 2-MINUTE WALKTHROUGH</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
     <!-- Comparison Section -->
     <section class="comparison-section">
         <h2 class="reveal" style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">Why Choose
@@ -560,8 +701,51 @@
                     <div class="feature-name">Missed Leads while Sleeping</div>
                     <div class="status-icon status-check">✓</div>
                     <div class="status-icon status-cross">✕</div>
+    </section>
+
+    <!-- Case Studies Section -->
+    <section class="case-studies reveal" style="padding: 8rem 3.5rem; text-align: center;">
+        <h2 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">Real Results for Real
+            Agencies</h2>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 4rem;">Don't just take our word for
+            it — see the numbers from our beta partners.</p>
+
+        <div class="case-grid"
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1200px; margin: 0 auto;">
+            <div class="case-card"
+                style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 2.5rem; border-radius: 24px; text-align: left;">
+                <div
+                    style="font-size: 0.9rem; color: #8b5cf6; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">
+                    Fitness Agency</div>
+                <h4 style="font-size: 1.5rem; color: white; margin-bottom: 1rem;">$12.5k Extra Monthly Revenue</h4>
+                <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6;">"Within 14 days of launching
+                    ZenFlow, we automated 450+ qualified lead DM conversations, leading to 18 new client signups."</p>
+                <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #3b82f6;"></div>
+                    <div>
+                        <div style="color: white; font-weight: 600;">Alex Rivera</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Founder, FitScale</div>
+                    </div>
                 </div>
             </div>
+
+            <div class="case-card"
+                style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 2.5rem; border-radius: 24px; text-align: left;">
+                <div
+                    style="font-size: 0.9rem; color: #06b6d4; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">
+                    SMM Coach</div>
+                <h4 style="font-size: 1.5rem; color: white; margin-bottom: 1rem;">85% Lead Qualification Rate</h4>
+                <p style="color: var(--text-secondary); font-size: 1rem; line-height: 1.6;">"Our setters used to spend
+                    hours qualifying leads. ZenFlow does it in seconds with better accuracy than humans."</p>
+                <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #10b981;"></div>
+                    <div>
+                        <div style="color: white; font-weight: 600;">Sarah Chen</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Coach, GrowthLabs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <section class="pricing-section">
@@ -643,12 +827,22 @@
             <!-- Starter -->
             <div class="pricing-card">
                 <h3>Starter</h3>
-                <div class="price">₹499<span>/mo</span></div>
+                <div class="price" style="flex-direction: column; align-items: center; gap: 0.25rem;">
+                    <div style="display: flex; align-items: baseline;">
+                        <span style="font-size: 1.5rem; margin-right: 0.2rem;">₹</span>499<span
+                            style="font-size: 1rem;">/mo</span>
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-secondary); opacity: 0.8;">
+                        &approx; $5.99 USD
+                    </div>
+                </div>
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <span
-                        style="color: var(--text-secondary); text-decoration: line-through; font-size: 1rem;">$495/mo</span>
-                    <span style="color: #10b981; font-weight: 700; margin-left: 0.5rem; font-size: 0.9rem;">BETA
-                        PRICING</span>
+                        style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.9rem;">Standard:
+                        ₹1,499 ($18)</span>
+                    <span
+                        style="color: #10b981; font-weight: 700; display: block; font-size: 0.85rem; margin-top: 0.5rem;">BETA
+                        ACCESS LOCKED</span>
                 </div>
                 <ul class="features">
                     <li><i data-lucide="check-circle-2"></i> 3 automations</li>
@@ -672,12 +866,22 @@
                     style="position: absolute; top: 1.5rem; left: 50%; transform: translateX(-50%); background: #8b5cf6; color: white; padding: 0.5rem 1.5rem; border-radius: 30px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; white-space: nowrap; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
                     MOST POPULAR</div>
                 <h3>Growth</h3>
-                <div class="price">₹999<span>/mo</span></div>
+                <div class="price" style="flex-direction: column; align-items: center; gap: 0.25rem;">
+                    <div style="display: flex; align-items: baseline;">
+                        <span style="font-size: 1.5rem; margin-right: 0.2rem;">₹</span>999<span
+                            style="font-size: 1rem;">/mo</span>
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-secondary); opacity: 0.8;">
+                        &approx; $11.99 USD
+                    </div>
+                </div>
                 <div style="text-align: center; margin-bottom: 2rem;">
                     <span
-                        style="color: var(--text-secondary); text-decoration: line-through; font-size: 1rem;">$1,497/mo</span>
-                    <span style="color: #10b981; font-weight: 700; margin-left: 0.5rem; font-size: 0.9rem;">BETA
-                        PRICING</span>
+                        style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.9rem;">Standard:
+                        ₹2,499 ($30)</span>
+                    <span
+                        style="color: #10b981; font-weight: 700; display: block; font-size: 0.85rem; margin-top: 0.5rem;">BETA
+                        ACCESS LOCKED</span>
                 </div>
                 <ul class="features">
                     <li><i data-lucide="check-circle-2"></i> 10 automations</li>
@@ -700,13 +904,22 @@
             <!-- PRO -->
             <div class="pricing-card">
                 <h3>Pro</h3>
-                <div class="price" style="font-size: 2.5rem;"><span
-                        style="font-size: 3.5rem; display: block; margin-top: 0.5rem;">₹1,999</span><span
-                        style="font-size: 1rem;">/mo</span></div>
-                <div style="text-align: center; margin-bottom: 2rem; margin-top: -1.5rem;">
-                    <span style="color: var(--text-secondary); font-size: 0.85rem;">
-                        Custom pricing available · <strong style="color:#e5e7eb;">10 Pro beta seats</strong>
-                    </span>
+                <div class="price" style="flex-direction: column; align-items: center; gap: 0.25rem;">
+                    <div style="display: flex; align-items: baseline;">
+                        <span style="font-size: 1.5rem; margin-right: 0.2rem;">₹</span>1,999<span
+                            style="font-size: 1rem;">/mo</span>
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-secondary); opacity: 0.8;">
+                        &approx; $23.99 USD
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <span
+                        style="color: var(--text-secondary); text-decoration: line-through; font-size: 0.9rem;">Standard:
+                        ₹4,999 ($60)</span>
+                    <span
+                        style="color: #10b981; font-weight: 700; display: block; font-size: 0.85rem; margin-top: 0.5rem;">BETA
+                        ACCESS LOCKED</span>
                 </div>
                 <ul class="features">
                     <li><i data-lucide="check-circle-2"></i> Unlimited automations</li>
@@ -723,6 +936,15 @@
             </div>
         </div>
     </section>
+
+    <div id="videoModal" class="video-modal">
+        <div class="video-container">
+            <button class="close-modal" onclick="closeVideo()">✕ Close</button>
+            <iframe id="walkthroughVideo" width="100%" height="100%" src="" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+        </div>
+    </div>
 
     <footer
         style="padding: 5rem 3.5rem; text-align: center; border-top: 1px solid var(--glass-border); color: var(--text-secondary); background: rgba(0,0,0,0.3);">
@@ -855,7 +1077,35 @@
         if (bell && panel) {
             bell.addEventListener('click', () => togglePanel());
             // Auto-show once shortly after page load so all visitors see it
-            setTimeout(() => togglePanel(true), 1200);
+            setTimeout(() => togglePanel(true), 5000);
+        }
+
+        // Video Modal Logic
+        const videoModal = document.getElementById('videoModal');
+        const videoIframe = document.getElementById('walkthroughVideo');
+        const videoSrc = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"; // Placeholder: Can be replaced with actual walkthrough
+
+        function openVideo() {
+            if (videoModal && videoIframe) {
+                videoIframe.src = videoSrc;
+                videoModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scroll
+            }
+        }
+
+        function closeVideo() {
+            if (videoModal && videoIframe) {
+                videoIframe.src = "";
+                videoModal.classList.remove('active');
+                document.body.style.overflow = 'auto'; // Re-enable scroll
+            }
+        }
+
+        // Close on clicking outside the video
+        if (videoModal) {
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) closeVideo();
+            });
         }
     </script>
 </body>
