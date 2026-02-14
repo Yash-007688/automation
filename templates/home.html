@@ -1451,11 +1451,11 @@
                         required></textarea>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <!-- Simple star rating mock -->
+                    <div id="star-rating" style="display: flex; gap: 0.5rem;">
                         {% for i in range(1, 6) %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                            fill="#8b5cf6" stroke="#8b5cf6" stroke-width="1.5">
+                        <svg class="star-review" data-rating="{{ i }}" xmlns="http://www.w3.org/2000/svg" width="20"
+                            height="20" viewBox="0 0 24 24" fill="#8b5cf6" stroke="#8b5cf6" stroke-width="1.5"
+                            style="cursor: pointer; transition: transform 0.2s;">
                             <polygon
                                 points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                         </svg>
@@ -1464,7 +1464,7 @@
                     <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">Submit Feedback
                         →</button>
                 </div>
-                <input type="hidden" name="rating" value="5">
+                <input type="hidden" name="rating" id="review-rating-input" value="5">
             </form>
         </div>
     </section>
@@ -1668,6 +1668,47 @@
             // Auto-show once shortly after page load so all visitors see it
             setTimeout(() => togglePanel(true), 5000);
         }
+
+        // Star Rating Selection
+        const stars = document.querySelectorAll('.star-review');
+        const ratingInput = document.getElementById('review-rating-input');
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function () {
+                const rating = this.dataset.rating;
+                highlightStars(rating);
+            });
+
+            star.addEventListener('mouseout', function () {
+                highlightStars(ratingInput.value);
+            });
+
+            star.addEventListener('click', function () {
+                const rating = this.dataset.rating;
+                ratingInput.value = rating;
+                highlightStars(rating);
+                // Simple click animation
+                this.style.transform = 'scale(1.3)';
+                setTimeout(() => this.style.transform = 'scale(1)', 200);
+            });
+        });
+
+        function highlightStars(rating) {
+            stars.forEach(s => {
+                if (parseInt(s.dataset.rating) <= parseInt(rating)) {
+                    s.style.fill = '#8b5cf6';
+                    s.style.stroke = '#8b5cf6';
+                    s.style.opacity = '1';
+                } else {
+                    s.style.fill = 'transparent';
+                    s.style.stroke = '#8b5cf6';
+                    s.style.opacity = '0.5';
+                }
+            });
+        }
+
+        // Initial highlighting
+        if (ratingInput) highlightStars(ratingInput.value);
 
         // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
