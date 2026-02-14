@@ -102,6 +102,10 @@
                                 style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 4px; font-weight: 700; cursor: pointer;">
                                 Grant Tokens
                             </button>
+                            <button class="btn" onclick="changePlan({{ u.id }}, '@{{ u.username }}', '{{ u.plan }}')"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 4px; font-weight: 700; cursor: pointer;">
+                                Change Plan
+                            </button>
                             <form action="/admin/users/{{ u.id }}/delete" method="POST" style="display: inline;"
                                 onsubmit="return confirm('Delete user @{{ u.username }}? This action cannot be undone.')">
                                 <button class="btn"
@@ -139,6 +143,36 @@
                     }
                 })
                 .catch(err => alert('An error occurred. Please try again.'));
+        }
+    }
+
+    function changePlan(userId, username, currentPlan) {
+        const plans = { "1": "Free", "2": "Starter", "3": "Growth", "4": "Pro" };
+        const choice = prompt(`Update plan for ${username} (Current: ${currentPlan})\nEnter number:\n1: Free\n2: Starter\n3: Growth\n4: Pro`, "1");
+
+        if (choice !== null && plans[choice]) {
+            const newPlan = plans[choice];
+            if (newPlan === currentPlan) return;
+
+            const formData = new FormData();
+            formData.append('plan', newPlan);
+
+            fetch(`/admin/users/${userId}/update-plan`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Successfully updated ${username} to ${newPlan} plan!`);
+                        window.location.reload();
+                    } else {
+                        alert(`Error: ${data.error}`);
+                    }
+                })
+                .catch(err => alert('An error occurred. Please try again.'));
+        } else if (choice !== null) {
+            alert("Invalid choice. Please enter 1, 2, 3, or 4.");
         }
     }
 </script>

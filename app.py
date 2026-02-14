@@ -523,6 +523,21 @@ def grant_tokens(user_id):
         return jsonify({"success": True})
     return jsonify({"success": False, "error": "Invalid amount"}), 400
 
+@app.route('/admin/users/<int:user_id>/update-plan', methods=['POST'])
+@admin_required
+def update_plan(user_id):
+    user = User.query.get_or_404(user_id)
+    new_plan = request.form.get('plan')
+    if new_plan in PLAN_LIMITS:
+        old_plan = user.plan
+        user.plan = new_plan
+        # Reset tokens to new plan's default
+        user.free_tokens = PLAN_LIMITS[new_plan]["tokens"]
+        db.session.commit()
+        log_activity(session['user_id'], "Admin: updated plan", f"Updated @{user.username} from {old_plan} to {new_plan}")
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Invalid plan"}), 400
+
 @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
 def delete_user(user_id):
