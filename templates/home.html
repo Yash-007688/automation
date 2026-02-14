@@ -855,7 +855,46 @@
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="ZenFlow"
                 style="height: 40px; width: auto;">
         </a>
-        <div class="nav-links" style="display:flex; align-items:center; gap:1rem; position:relative;">
+        <div class="nav-links" style="display:flex; align-items:center; gap:1.5rem; position:relative;">
+            {% if user %}
+            <div class="nav-user"
+                style="display: flex; align-items: center; gap: 1rem; position: relative; cursor: pointer;"
+                onclick="toggleProfileDropdown(event)">
+                <div style="text-align: right; display: none; @media (min-width: 768px) { display: block; }">
+                    <p style="font-size: 0.8rem; font-weight: 800; margin: 0; color: white;">@{{ user.username }}</p>
+                    <p
+                        style="font-size: 0.65rem; color: {{ user.niche_color or '#8b5cf6' }}; margin: 0; font-weight: 600;">
+                        {{ user.niche }}</p>
+                </div>
+                <div class="nav-avatar"
+                    style="width: 38px; height: 38px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);">
+                    {{ user.avatar or user.username[0]|upper }}
+                </div>
+
+                <!-- Profile dropdown -->
+                <div id="profile-dropdown"
+                    style="position:absolute; right:0; top:120%; width:200px; background:rgba(15,23,42,0.97); border-radius:18px; border:1px solid var(--glass-border); box-shadow:0 18px 45px rgba(15,23,42,0.9); padding:0.75rem; transform:translateY(-10px); opacity:0; pointer-events:none; transition:all 0.25s ease; z-index:130;">
+                    <a href="/dashboard"
+                        style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; color:white; text-decoration:none; font-size:0.9rem; font-weight:600; border-radius:12px; transition:background 0.2s;">
+                        <i data-lucide="layout-dashboard" style="width: 18px;"></i>
+                        Dashboard
+                    </a>
+                    <a href="/logout"
+                        style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; color:#fca5a5; text-decoration:none; font-size:0.9rem; font-weight:600; border-radius:12px; transition:background 0.2s;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <a href="/login" class="btn btn-primary">Login</a>
+            {% endif %}
+
             <!-- Notification Bell -->
             <button id="notif-bell" aria-label="Notifications"
                 style="width:38px; height:38px; border-radius:999px; border:1px solid var(--glass-border); background:rgba(15,23,42,0.9); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;">
@@ -866,7 +905,6 @@
                         stroke-linejoin="round" />
                 </svg>
             </button>
-            <a href="/login" class="btn btn-primary">Login</a>
 
             <!-- Notification dropdown -->
             <div id="notif-panel"
@@ -1370,6 +1408,67 @@
         </div>
     </section>
 
+    <!-- Review Submission Section -->
+    <section class="review-section reveal"
+        style="padding: 8rem 3.5rem; text-align: center; background: rgba(255, 255, 255, 0.02); border-top: 1px solid var(--glass-border);">
+        <h2 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; color: white;">Drop a Feedback</h2>
+        <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 4rem;">We’re building ZenFlow with
+            our founding members. Share your thoughts directly with our devs.</p>
+
+        <div
+            style="max-width: 600px; margin: 0 auto; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); padding: 3rem; border-radius: 32px; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div
+                    style="width: 48px; height: 48px; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white;">
+                    {% if user %}
+                    {{ user.avatar or user.username[0]|upper }}
+                    {% else %}
+                    ?
+                    {% endif %}
+                </div>
+                <div>
+                    <p style="color: white; font-weight: 700; margin: 0;">
+                        {% if user %}
+                        @{{ user.username }}
+                        {% else %}
+                        Guest User
+                        {% endif %}
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                        Posting as {% if user %}Founder{% else %}Guest Access{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <form action="/submit-review" method="POST">
+                <div style="margin-bottom: 1.5rem;">
+                    <label
+                        style="display: block; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem;">Your
+                        Feedback</label>
+                    <textarea name="content" rows="4"
+                        placeholder="Tell us about your experience or what you'd like to see next..."
+                        style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; color: white; resize: none;"
+                        required></textarea>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <!-- Simple star rating mock -->
+                        {% for i in range(1, 6) %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                            fill="#8b5cf6" stroke="#8b5cf6" stroke-width="1.5">
+                            <polygon
+                                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">Submit Feedback
+                        →</button>
+                </div>
+                <input type="hidden" name="rating" value="5">
+            </form>
+        </div>
+    </section>
+
     <!-- FAQ Section -->
     <section id="faq" class="faq-section reveal">
         <h2 style="font-size: 3.5rem; font-weight: 800; text-align: center; color: white; margin-bottom: 1rem;">Common
@@ -1562,9 +1661,42 @@
         }
 
         if (bell && panel) {
-            bell.addEventListener('click', () => togglePanel());
+            bell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePanel();
+            });
             // Auto-show once shortly after page load so all visitors see it
             setTimeout(() => togglePanel(true), 5000);
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (panel && !panel.contains(e.target) && e.target !== bell) {
+                togglePanel(false);
+            }
+
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileDropdown && !profileDropdown.contains(e.target) && !e.target.closest('.nav-user')) {
+                profileDropdown.style.opacity = '0';
+                profileDropdown.style.transform = 'translateY(-10px)';
+                profileDropdown.style.pointerEvents = 'none';
+            }
+        });
+
+        function toggleProfileDropdown(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('profile-dropdown');
+            if (!dropdown) return;
+            const isOpen = dropdown.style.opacity === '1';
+            if (!isOpen) {
+                dropdown.style.opacity = '1';
+                dropdown.style.transform = 'translateY(0)';
+                dropdown.style.pointerEvents = 'auto';
+            } else {
+                dropdown.style.opacity = '0';
+                dropdown.style.transform = 'translateY(-10px)';
+                dropdown.style.pointerEvents = 'none';
+            }
         }
 
         // Video Modal Logic

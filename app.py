@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 import requests
 import json
-from models import db, User, Funnel, Lead, AutomatedMedia, BetaSignup, ActivityLog
+from models import db, User, Funnel, Lead, AutomatedMedia, BetaSignup, ActivityLog, Review
 from instagram_api import InstagramAPI, exchange_short_lived_token, refresh_long_lived_token, validate_token, get_recent_mentions
 from cryptography.fernet import Fernet
 import base64
@@ -78,19 +78,23 @@ def is_founding_coupon_active():
 PLAN_LIMITS = {
     "Free": {
         "allow_media_import": False,
-        "max_active_media": 0,  # no reel targeting on free
+        "max_active_media": 0,
+        "tokens": 4000
     },
     "Starter": {
         "allow_media_import": True,
         "max_active_media": 3,
+        "tokens": 10000
     },
     "Growth": {
         "allow_media_import": True,
         "max_active_media": 10,
+        "tokens": 50000
     },
     "Pro": {
         "allow_media_import": True,
-        "max_active_media": None,  # unlimited
+        "max_active_media": None,
+        "tokens": 200000
     },
 }
 
@@ -132,16 +136,18 @@ def log_activity(user_id, action, details=None):
 
 
 def check_and_reset_tokens(user):
-    """Refill free tokens to 4000 every 30 days."""
+    """Refill free tokens according to plan every 30 days."""
     if not user.tokens_reset_at:
         user.tokens_reset_at = datetime.utcnow()
-        user.free_tokens = 4000
+        plan_data = PLAN_LIMITS.get(user.plan, PLAN_LIMITS["Free"])
+        user.free_tokens = plan_data["tokens"]
         db.session.commit()
         return
 
     # If it's been more than 30 days since last reset
     if datetime.utcnow() > user.tokens_reset_at + timedelta(days=30):
-        user.free_tokens = 4000
+        plan_data = PLAN_LIMITS.get(user.plan, PLAN_LIMITS["Free"])
+        user.free_tokens = plan_data["tokens"]
         user.tokens_reset_at = datetime.utcnow()
         db.session.commit()
 
@@ -170,11 +176,19 @@ def detect_niche(text):
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return render_template('home.html', user=user)
 
 @app.route('/login')
 def login_ui():
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('home'))
 
 
 
@@ -497,14 +511,17 @@ def admin_users():
         
     return render_template('admin_users.html', user=user, users=users_with_passwords)
 
-@app.route('/admin/users/<int:user_id>/add-tokens', methods=['POST'])
+@app.route('/admin/users/<int:user_id>/grant-tokens', methods=['POST'])
 @admin_required
-def add_tokens(user_id):
+def grant_tokens(user_id):
     user = User.query.get_or_404(user_id)
-    user.paid_tokens += 1000
-    db.session.commit()
-    log_activity(session['user_id'], "Admin: added tokens", f"Added 1,000 paid tokens to @{user.username} (ID: {user_id})")
-    return redirect(url_for('admin_users'))
+    amount = request.form.get('amount', type=int)
+    if amount and amount > 0:
+        user.paid_tokens += amount
+        db.session.commit()
+        log_activity(session['user_id'], "Admin: granted tokens", f"Granted {amount:,} tokens to @{user.username}")
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Invalid amount"}), 400
 
 @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
@@ -543,6 +560,35 @@ def admin_activities():
     user = User.query.get(session['user_id'])
     activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
     return render_template('admin_activities.html', user=user, activities=activities)
+
+@app.route('/admin/reviews')
+@admin_required
+def admin_reviews():
+    user = User.query.get(session['user_id'])
+    reviews = Review.query.order_by(Review.created_at.desc()).all()
+    return render_template('admin_reviews.html', user=user, reviews=reviews)
+
+@app.route('/submit-review', methods=['POST'])
+def submit_review():
+    content = request.form.get('content')
+    rating = request.form.get('rating', type=int, default=5)
+    
+    if not content:
+        return redirect(url_for('home')) # Or show error
+    
+    new_review = Review(content=content, rating=rating)
+    
+    if 'user_id' in session:
+        new_review.user_id = session['user_id']
+    else:
+        # Generate guest name
+        guest_num = random.randint(1000, 9999)
+        new_review.guest_name = f"Guest {guest_num}"
+    
+    db.session.add(new_review)
+    db.session.commit()
+    
+    return redirect(url_for('home'))
 
 @app.route('/api/user/tokens')
 def get_user_tokens():
