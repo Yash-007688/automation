@@ -1030,6 +1030,109 @@
             Automation Potential (Free Analysis) →</a>
     </header>
 
+    <!-- Cross-Platform Compatibility Section -->
+    <section class="cross-platform-section" style="padding: 4rem 2rem; text-align: center; background: linear-gradient(180deg, rgba(139,92,246,0.03) 0%, transparent 100%);">
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">
+            Works Everywhere You Are
+        </h2>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 3rem;">
+            Cross-platform automation that runs in any browser on any operating system
+        </p>
+        
+        <!-- Operating Systems -->
+        <div class="os-logos" style="display: flex; justify-content: center; gap: 3rem; margin-bottom: 3rem; flex-wrap: wrap;">
+            <!-- Windows -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite;">
+                <img src="{{ url_for('static', filename='logo/windows_logo.png') }}" alt="Windows" width="48" height="48">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Windows</span>
+            </div>
+            
+            <!-- Mac -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.2s;">
+                <img src="{{ url_for('static', filename='logo/mac_logo.png') }}" alt="Mac" width="48" height="48">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Mac</span>
+            </div>
+            
+            <!-- Linux -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.4s;">
+                <img src="{{ url_for('static', filename='logo/linux_logo.png') }}" alt="Linux" width="48" height="48">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Linux</span>
+            </div>
+            
+            <!-- Android -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.6s;">
+                <img src="{{ url_for('static', filename='logo/android_logo.png') }}" alt="Android" width="48" height="48">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Android</span>
+            </div>
+            
+            <!-- iOS -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.8s;">
+                <img src="{{ url_for('static', filename='logo/ios_logo.png') }}" alt="iOS" width="48" height="48">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">iOS</span>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <div style="width: 200px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); margin: 2rem auto;"></div>
+        
+        <!-- Browsers -->
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            Compatible with all modern browsers
+        </p>
+        <div class="browser-logos" style="display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;">
+            <!-- Chrome -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.1s;">
+                <img src="{{ url_for('static', filename='logo/chrome_logo.png') }}" alt="Chrome" width="44" height="44">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Chrome</span>
+            </div>
+            
+            <!-- Firefox -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.3s;">
+                <img src="{{ url_for('static', filename='logo/firefox_logo.png') }}" alt="Firefox" width="44" height="44">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Firefox</span>
+            </div>
+            
+            <!-- Safari -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.5s;">
+                <img src="{{ url_for('static', filename='logo/safari_logo.png') }}" alt="Safari" width="44" height="44">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Safari</span>
+            </div>
+            
+            <!-- Edge -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.7s;">
+                <img src="{{ url_for('static', filename='logo/edge_logo.png') }}" alt="Edge" width="44" height="44">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Edge</span>
+            </div>
+            
+            <!-- Opera -->
+            <div class="platform-icon" style="animation: float 3s ease-in-out infinite 0.9s;">
+                <img src="{{ url_for('static', filename='logo/opera_logo.png') }}" alt="Opera" width="44" height="44">
+                <span style="display: block; margin-top: 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem;">Opera</span>
+            </div>
+        </div>
+    </section>
+    
+    <style>
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        .platform-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+            cursor: default;
+        }
+        .platform-icon:hover {
+            transform: scale(1.1);
+        }
+    </style>
+
     <!-- Demo Section -->
     <section class="demo-section reveal"
         style="padding: 8rem 3.5rem; text-align: center; background: rgba(139, 92, 246, 0.02);">
