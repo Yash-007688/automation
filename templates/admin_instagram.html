@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Instagram Connections{% endblock %}
+
+{% block content %}
+<style>
+@media (max-width: 768px) {
+h1 { font-size: 1.5rem !important; }
+.admin-container { padding: 1rem !important; }
+table { font-size: 0.7rem; }
+th, td { padding: 0.5rem !important; }
+}
+</style>
+<div class="admin-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1
+                style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Instagram Connections</h1>
+            <p style="color: var(--text-secondary);">Track user Instagram accounts and usage</p>
+        </div>
+        <a href="/admin" class="btn btn-secondary" style="text-decoration: none;">← Back to Dashboard</a>
+    </div>
+
+    <!-- Summary Stats -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.5rem; text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; text-transform: uppercase;">Total Connections</p>
+            <p style="font-size: 2rem; font-weight: 800; margin: 0; color: #fff;">{{ connections|length }}</p>
+        </div>
+        <div class="card" style="padding: 1.5rem; text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; text-transform: uppercase;">Total Revenue</p>
+            <p style="font-size: 2rem; font-weight: 800; margin: 0; color: #10b981;">${{ "%.2f"|format(total_revenue) }}</p>
+        </div>
+        <div class="card" style="padding: 1.5rem; text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; text-transform: uppercase;">Total Tokens Used</p>
+            <p style="font-size: 2rem; font-weight: 800; margin: 0; color: #f59e0b;">{{ total_tokens_used|default(0) }}</p>
+        </div>
+        <div class="card" style="padding: 1.5rem; text-align: center;">
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.5rem 0; text-transform: uppercase;">Active Connections</p>
+            <p style="font-size: 2rem; font-weight: 800; margin: 0; color: #3b82f6;">{{ active_connections }}</p>
+        </div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--glass-border);">
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Registered User</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Instagram Username</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Revenue</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Tokens Used</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Connected</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Last Used</th>
+                    <th style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conn in connections %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03); transition: background 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.01)'"
+                    onmouseout="this.style.background='transparent'">
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff;">
+                                {{ conn.user.username[0]|upper }}
+                            </div>
+                            <p style="font-weight: 700; margin: 0; color: #fff;">@{{ conn.user.username }}</p>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <a href="https://instagram.com/{{ conn.ig_username }}" target="_blank" style="color: #e1306c; text-decoration: none; font-weight: 600;">
+                            @{{ conn.ig_username }}
+                        </a>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <span style="color: #10b981; font-weight: 700;">${{ "%.2f"|format(conn.revenue) }}</span>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        <span style="color: #f59e0b; font-weight: 700;">{{ conn.tokens_used }}</span>
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+                        {{ conn.connected_at.strftime('%Y-%m-%d') if conn.connected_at else '-' }}
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+                        {{ conn.last_used_at.strftime('%Y-%m-%d %H:%M') if conn.last_used_at else '-' }}
+                    </td>
+                    <td style="padding: 1.25rem 1.5rem;">
+                        {% if conn.is_active %}
+                        <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Active</span>
+                        {% else %}
+                        <span style="background: rgba(107, 114, 128, 0.1); color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                        No Instagram connections found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -3,6 +3,20 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
+<style>
+@media (max-width: 768px) {
+.stats-grid { grid-template-columns: 1fr 1fr !important; gap: 1rem !important; }
+.stat-value { font-size: 1.5rem !important; }
+.header-section h1 { font-size: 1.5rem !important; }
+.card-btn-grid { grid-template-columns: 1fr !important; }
+table { font-size: 0.75rem; }
+th, td { padding: 0.5rem !important; }
+}
+@media (max-width: 480px) {
+.stats-grid { grid-template-columns: 1fr !important; }
+.admin-container { padding: 1rem !important; }
+}
+</style>
 <div class="admin-container">
     <div class="header-section" style="margin-bottom: 2rem;">
         <h1
@@ -83,6 +97,10 @@
                 <a href="/admin/reviews" class="btn"
                     style="text-align: center; text-decoration: none; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff;">
                     User Reviews
+                </a>
+                <a href="/admin/instagram-connections" class="btn"
+                    style="text-align: center; text-decoration: none; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff;">
+                    Instagram Connections
                 </a>
                 <div
                     style="margin-top: 2rem; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2);">

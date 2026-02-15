@@ -85,3 +85,17 @@ class Review(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     user = db.relationship('User', backref=db.backref('reviews', lazy=True))
+
+
+class InstagramConnection(db.Model):
+    """Track Instagram connections for admin analytics"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    ig_username = db.Column(db.String(100), nullable=False)
+    revenue = db.Column(db.Float, default=0.0)
+    tokens_used = db.Column(db.Integer, default=0)
+    connected_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_used_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
+    
+    user = db.relationship('User', backref=db.backref('instagram_connections', lazy=True))

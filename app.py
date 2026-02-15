@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 
 import requests
 import json
-from models import db, User, Funnel, Lead, AutomatedMedia, BetaSignup, ActivityLog, Review
+from models import db, User, Funnel, Lead, AutomatedMedia, BetaSignup, ActivityLog, Review, InstagramConnection
 from instagram_api import InstagramAPI, exchange_short_lived_token, refresh_long_lived_token, validate_token, get_recent_mentions
 from cryptography.fernet import Fernet
 import base64
@@ -582,6 +582,80 @@ def admin_reviews():
     user = User.query.get(session['user_id'])
     reviews = Review.query.order_by(Review.created_at.desc()).all()
     return render_template('admin_reviews.html', user=user, reviews=reviews)
+
+@app.route('/admin/instagram-connections')
+@admin_required
+def admin_instagram_connections():
+    user = User.query.get(session['user_id'])
+    connections = InstagramConnection.query.order_by(InstagramConnection.connected_at.desc()).all()
+    
+    total_revenue = sum(conn.revenue for conn in connections)
+    total_tokens_used = sum(conn.tokens_used for conn in connections)
+    active_connections = sum(1 for conn in connections if conn.is_active)
+    
+    return render_template('admin_instagram.html', 
+                           user=user, 
+                           connections=connections,
+                           total_revenue=total_revenue,
+                           total_tokens_used=total_tokens_used,
+                           active_connections=active_connections)
+
+@app.route('/api/instagram-connection', methods=['POST'])
+def create_instagram_connection():
+    """Create or update an Instagram connection for a user"""
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.get_json()
+    ig_username = data.get('ig_username')
+    
+    if not ig_username:
+        return jsonify({"error": "Instagram username required"}), 400
+    
+    user = User.query.get(session['user_id'])
+    
+    # Check if connection already exists
+    connection = InstagramConnection.query.filter_by(
+        user_id=user.id, 
+        ig_username=ig_username
+    ).first()
+    
+    if connection:
+        connection.is_active = True
+        connection.last_used_at = datetime.utcnow()
+    else:
+        connection = InstagramConnection(
+            user_id=user.id,
+            ig_username=ig_username,
+            connected_at=datetime.utcnow(),
+            last_used_at=datetime.utcnow()
+        )
+        db.session.add(connection)
+    
+    db.session.commit()
+    return jsonify({"message": "Connection tracked", "id": connection.id}), 200
+
+@app.route('/api/instagram-connection/<int:connection_id>', methods=['PUT'])
+def update_instagram_connection(connection_id):
+    """Update Instagram connection stats (revenue, tokens used)"""
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    connection = InstagramConnection.query.get(connection_id)
+    if not connection:
+        return jsonify({"error": "Connection not found"}), 404
+    
+    data = request.get_json()
+    
+    if 'revenue' in data:
+        connection.revenue = data['revenue']
+    if 'tokens_used' in data:
+        connection.tokens_used = data['tokens_used']
+    
+    connection.last_used_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({"message": "Connection updated"}), 200
 
 @app.route('/submit-review', methods=['POST'])
 def submit_review():
