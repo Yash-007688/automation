@@ -1597,12 +1597,12 @@
             lucide.createIcons();
         }
 
-        // Typing effect for hero headline
+        // Typing effect for hero headline - replays when visible
         const heroEl = document.getElementById('hero-typed');
         if (heroEl) {
             const heroText = "Turn Every Instagram Comment\ninto Qualified Sales Calls\n— Automatically.";
             let idx = 0;
-
+            
             function typeHero() {
                 if (idx <= heroText.length) {
                     const current = heroText.slice(0, idx);
@@ -1611,8 +1611,27 @@
                     setTimeout(typeHero, 40); // typing speed
                 }
             }
-
-            typeHero();
+            
+            // Reset and replay animation when hero comes into view
+            function startTypingAnimation() {
+                idx = 0;
+                heroEl.innerHTML = '';
+                typeHero();
+            }
+            
+            // Use IntersectionObserver to replay animation when hero is visible
+            const heroObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        startTypingAnimation();
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            heroObserver.observe(heroEl);
+            
+            // Also run on page load
+            startTypingAnimation();
         }
 
         // Scroll Reveal Animation
